@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="mmprfass" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/mmprfass" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="setn-pred.mm ZFC" />
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/mmprfass" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-pg" />
+			<Add option="-Og" />
+			<Add option="-g" />
+			<Add option="-fexceptions -ffast-math" />
+		</Compiler>
+		<Linker>
+			<Add option="-pg -lgmon" />
+		</Linker>
+		<Unit filename="MCTS/MCTS.h" />
+		<Unit filename="MCTS/tree.h" />
+		<Unit filename="ass.cpp" />
+		<Unit filename="ass.h" />
+		<Unit filename="cnf.cpp" />
+		<Unit filename="cnf.h" />
+		<Unit filename="comment.cpp" />
+		<Unit filename="comment.h" />
+		<Unit filename="database.h" />
+		<Unit filename="def.cpp" />
+		<Unit filename="def.h" />
+		<Unit filename="disjvars.cpp" />
+		<Unit filename="disjvars.h" />
+		<Unit filename="getproof.cpp" />
+		<Unit filename="getproof.h" />
+		<Unit filename="io.cpp" />
+		<Unit filename="io.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="msg.h" />
+		<Unit filename="parse.cpp" />
+		<Unit filename="parse.h" />
+		<Unit filename="proof.h" />
+		<Unit filename="proof/analyze.cpp" />
+		<Unit filename="proof/analyze.h" />
+		<Unit filename="proof/step.cpp" />
+		<Unit filename="proof/step.h" />
+		<Unit filename="proof/verify.cpp" />
+		<Unit filename="proof/verify.h" />
+		<Unit filename="propctor.cpp" />
+		<Unit filename="propctor.h" />
+		<Unit filename="read.h" />
+		<Unit filename="readdata.cpp" />
+		<Unit filename="readfile.cpp" />
+		<Unit filename="sat.cpp" />
+		<Unit filename="sat.h" />
+		<Unit filename="satsolve/DPLL.cpp" />
+		<Unit filename="satsolve/DPLL.h" />
+		<Unit filename="satsolve/test.cpp" />
+		<Unit filename="satsolve/watchlst.cpp" />
+		<Unit filename="satsolve/watchlst.h" />
+		<Unit filename="scope.cpp" />
+		<Unit filename="scope.h" />
+		<Unit filename="search/base.cpp" />
+		<Unit filename="search/base.h" />
+		<Unit filename="search/environ.cpp" />
+		<Unit filename="search/environ.h" />
+		<Unit filename="search/gen.cpp" />
+		<Unit filename="search/gen.h" />
+		<Unit filename="search/move.h" />
+		<Unit filename="search/node.h" />
+		<Unit filename="search/prop.cpp" />
+		<Unit filename="search/prop.h" />
+		<Unit filename="sect.cpp" />
+		<Unit filename="sect.h" />
+		<Unit filename="stat.h" />
+		<Unit filename="stmt.h" />
+		<Unit filename="strview.h" />
+		<Unit filename="syntaxiom.cpp" />
+		<Unit filename="syntaxiom.h" />
+		<Unit filename="test.cpp" />
+		<Unit filename="test.h" />
+		<Unit filename="token.h" />
+		<Unit filename="util.h" />
+		<Unit filename="util/arith.h" />
+		<Unit filename="util/filter.h" />
+		<Unit filename="util/find.h" />
+		<Unit filename="util/for.h" />
+		<Unit filename="util/iter.h" />
+		<Unit filename="util/progress.h" />
+		<Unit filename="util/timer.h" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
