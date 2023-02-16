@@ -1,3 +1,3 @@
 # mmprfass
 
-Proof analyzing tool for metamath
+Proof searching tool for metamath
