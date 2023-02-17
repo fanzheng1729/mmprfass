@@ -62,7 +62,7 @@ Hypptr Scopes::activehypptr(strview label) const
 {
     FOR (const_reference scope, *this)
     {
-        std::vector<Hypiter>::const_iterator const
+        Hypiters::const_iterator const
             iterhypvec(util::find(scope.activehyp, label));
         if (iterhypvec != scope.activehyp.end())
             return &**iterhypvec;
@@ -94,7 +94,7 @@ bool Scopes::isdvr(strview var1, strview var2) const
 }
 
 // Determine mandatory disjoint variable restrictions.
-Disjvars Scopes::disjvars(std::set<strview> const & varsused) const
+Disjvars Scopes::disjvars(Symbol2s const & varsused) const
 {
     Disjvars result;
 
@@ -121,19 +121,19 @@ void Scopes::completeass(struct Assertion & ass) const
     Expression const & exp(ass.expression);
 
     // Determine variables used and find mandatory hypotheses
-    std::set<strview> varsused;
-    FOR (Symbol3 symbol, exp)
-        if (symbol.phyp)
+    Symbol2s varsused;
+    FOR (Symbol3 var, exp)
+        if (var)
         {
-            varsused.insert(symbol);
-            ass.varsused[symbol] = Bvector(1, true);
-//std::cout << symbol << " 1\t";
+            varsused.insert(var);
+            ass.varsused[var].assign(1, true);
+//std::cout << var << " ";
         }
 
     for (const_reverse_iterator iter(rbegin()); iter != rend(); ++iter)
     {
-        std::vector<Hypiter> const & hypvec(iter->activehyp);
-        for (std::vector<Hypiter>::const_reverse_iterator iter2
+        Hypiters const & hypvec(iter->activehyp);
+        for (Hypiters::const_reverse_iterator iter2
             (hypvec.rbegin()); iter2 != hypvec.rend(); ++iter2)
         {
             Hypiter const iterhyp(*iter2);
@@ -143,7 +143,7 @@ void Scopes::completeass(struct Assertion & ass) const
             if (hyp.second && varsused.count(hypexp[1]) > 0)
             {
 //std::cout << "Mandatory floating Hypothesis: " << hypexp;
-                ass.hypotheses.push_front(iterhyp);
+                ass.hypiters.push_back(iterhyp);
                 ass.varsused.insert(std::make_pair(hypexp[1],
                                                    Bvector(1, false)));
 //std::cout << hypexp[1] << " 0\t";
@@ -151,23 +151,27 @@ void Scopes::completeass(struct Assertion & ass) const
             else if (!hyp.second)
             {
 //std::cout << "Essential hypothesis: " << hypexp;
-                ass.hypotheses.push_front(iterhyp);
+                ass.hypiters.push_back(iterhyp);
                 // Add variables used in hypotheses
-                FOR (Symbol3 symbol, hypexp)
-                    if (symbol.phyp)
-                        varsused.insert(symbol);
-//std::cout << varsused.size() << " variables used so far" << std::endl;
+                FOR (Symbol3 var, hypexp)
+                    if (var)
+                    {
+                        varsused.insert(var);
+//std::cout << var << " ";
+                    }
             }
         }
     }
-//std::cin.get();
+
+    std::reverse(ass.hypiters.begin(), ass.hypiters.end());
+
     ass.disjvars = disjvars(varsused);
     // Find key hypotheses.
     if (ass.varcount() == ass.expvarcount())
         return;
     for (Hypsize i(0); i < ass.hypcount(); ++i)
     {
-        Hypiter const iter(ass.hypotheses[i]);
+        Hypiter const iter(ass.hypiters[i]);
         if (iter->second.second)
             continue; // Skip floating hypotheses.
         // Expression of the hypothesis

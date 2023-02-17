@@ -103,8 +103,8 @@ std::pair<CNFClausesat, CNFClause::size_type> CNFClauses::nextclause
 typedef Bvector::size_type TTindex, Mask;
 
 static bool checkmask
-    (Bvector const & truthtable, Atom atomcount,
-     TTindex newindex, Mask mask, std::vector<bool> & compare)
+    (Bvector const & truthtable, Atom atomcount, TTindex newindex, Mask mask,
+     Bvector & compare)
 {
     for (Atom i(0); i < atomcount; ++i)
     {
@@ -140,16 +140,16 @@ static void addclausefromindexmask
 // Return a clause covering truthtable[index], and update processed.
 static void processtruthtableentry
     (Bvector const & truthtable, TTindex index,
-     std::vector<bool> & processed, CNFClauses & cnf)
+     Bvector & processed, CNFClauses & cnf)
 {
     Atom const atomcount(log2(truthtable.size()));
-    std::vector<bool> static maskadded, compare;
+    Bvector maskadded, compare;
     maskadded.assign(truthtable.size(), false);
     // compare[i] = if there is a block containing index and i
     compare = maskadded;
     compare[index] = true;
 
-    std::deque<Mask> static masks;
+    std::deque<Mask> masks;
     masks.assign(1, 0);
     while (!masks.empty())
     {
@@ -187,9 +187,8 @@ static void processtruthtableentry
 // Construct the cnf representing a truth table.
 CNFClauses::CNFClauses(Bvector const & truthtable)
 {
-    std::vector<bool> static processed;
-    processed.assign(truthtable.size(), false);
-    std::vector<bool>::iterator const begin(processed.begin());
+    Bvector processed(truthtable.size(), false);
+    Bvector::iterator const begin(processed.begin());
     for (TTindex i(0); i < truthtable.size();)
     {
         processtruthtableentry(truthtable, i, processed, *this);

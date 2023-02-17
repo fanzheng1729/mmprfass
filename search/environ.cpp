@@ -23,12 +23,12 @@ bool Environ::done(Goals::pointer pgoal, strview typecode) const
         return true;
 
     Assertion const & ass(m_assiter->second);
-    Hypiteriter const iter(ass.matchhyp(pgoal->first, typecode));
-    if (iter == ass.hypotheses.end())
+    Hypsize const i(ass.matchhyp(pgoal->first, typecode));
+    if (i == ass.hypcount())
         return false;
 
     pgoal->second.value = PROVEN;
-    pgoal->second.proofsteps.assign(1, *iter);
+    pgoal->second.proofsteps.assign(1, ass.hypiters[i]);
     return true;
 }
 
@@ -45,7 +45,7 @@ void Environ::writeproof(Node const & node) const
         if (move.isfloating(i))
         {
             // Floating hypothesis
-            Hypiter iter(move.pass->second.hypotheses[i]);
+            Hypiter iter(move.pass->second.hypiters[i]);
             hyps.push_back(&move.substitutions[iter->second.first[1]]);
         }
         else
@@ -79,7 +79,7 @@ bool Environ::addenviron(Node & node, strview label, Assertion const & ass)
     Assiter assiter
         (subassertions.insert(std::make_pair(iter->first, ass)).first);
     // Pointer to the sub environment
-    Environ * penv(subenv(assiter));
+    Environ * penv(makeenv(assiter));
     iter->second.reset(penv);
     // Prepare the sub environment.
     penv->m_assiter = assiter;

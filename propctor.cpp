@@ -122,8 +122,7 @@ Propctors::const_iterator Propctors::adddef
 }
 
 // Evaluate the truth table against stack. Return true if okay.
-static bool evaltruthtableonstack
-    (Bvector const & truthtable, std::vector<bool> & stack)
+static bool evaltruthtableonstack(Bvector const & truthtable, Bvector & stack)
 {
     // # arguments
     Atom argcount(log2(truthtable.size()));
@@ -148,12 +147,10 @@ int Propctors::calctruthvalue
     (Definitions const & definitions, Proofsteps const & lhs,
      Proofsteps const & rhs, Bvector::size_type arg)
 {
-    std::vector<bool> stack;
+    Bvector stack;
 //std::cout << rhs;
     FOR (Proofstep step, rhs)
     {
-        if (unexpected(!step, "bad proof step", ""))
-            return false;
         Proofsteps::const_iterator iterarg
             (std::find(lhs.begin(), lhs.end() - 1, step));
         if (iterarg != lhs.end() - 1)
@@ -206,7 +203,7 @@ static void addlitatomequiv(CNFClauses & cnf, Literal lit, Atom atom)
 // # of auxiliary atoms start from atomcount.
 // Return true if okay. First auxiliary atom = hyps.size()
 bool Propctors::addcnffromrPolish
-    (Proofsteps const & proofsteps, std::deque<Hypiter> const & hyps,
+    (Proofsteps const & proofsteps, Hypiters const & hyps,
      CNFClauses & cnf, Atom & atomcount) const
 {
     Prooftree const & tree(prooftree(proofsteps));
@@ -221,11 +218,11 @@ bool Propctors::addcnffromrPolish
 //std::cout << "Step " << step << ":\t";
         if (proofsteps[i].type == Proofstep::HYP)
         {
-            Hypiteriter const iterhyp(util::find(hyps, step));
-            if (iterhyp != hyps.end())
+            Hypsize const hypindex(util::find(hyps, step) - hyps.begin());
+            if (hypindex < hyps.size())
             {
-                literals[i] = (iterhyp - hyps.begin()) * 2;
-//std::cout << "argument " << literals[i] / 2 << std::endl;
+                literals[i] = (hypindex) * 2;
+//std::cout << "argument " << hypindex << std::endl;
                 if (proofsteps.size() != 1)
                     continue;
                 // Expression with a single variable
@@ -257,7 +254,7 @@ bool Propctors::addcnffromrPolish
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
 CNFClauses Propctors::hypcnf(struct Assertion const & ass, Atom & count) const
 {
-    std::deque<Hypiter> const & hyps(ass.hypotheses);
+    Hypiters const & hyps(ass.hypiters);
     // One atom for each mandatory hypotheses (only floating ones are used)
     count = hyps.size();
 
@@ -286,7 +283,7 @@ CNFClauses Propctors::cnf
     Atom count(0);
     CNFClauses cnf(hypcnf(ass, count));
     // Add conclusion.
-    if (!addcnffromrPolish(proofsteps, ass.hypotheses, cnf, count))
+    if (!addcnffromrPolish(proofsteps, ass.hypiters, cnf, count))
         return CNFClauses();
     // Negate conclusion.
     cnf.closeoff(true);

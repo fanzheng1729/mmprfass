@@ -17,7 +17,8 @@ Prop::Eval Prop::evaltheirleaf(Node const & node) const
         if (done(pgoal, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
         bool const needshyps(pgoal->second.hypsneeded);
-        double const neweval(score(needshyps * hypslen + pgoal->first.size()));
+        Proofsize newhypslen(needshyps ? hypslen : m_assiter->second.hypcount());
+        double const neweval(score(newhypslen + pgoal->first.size()));
         if (neweval < eval)
             eval = neweval;
     }
@@ -62,13 +63,13 @@ void Prop::addhypmoves(Move const & move, Moves & moves,
     // Iterate through key hypotheses i of the theorem.
     FOR (Hypsize i, thm.keyhyps)
     {
-        Hypiter const hypi(thm.hypotheses[i]);
+        Hypiter const hypi(thm.hypiters[i]);
 //std::cout << move.pass->first << ' ' << hypi->first << ' ';
 //std::cout << thm.hypsrPolish[i] << move.hyprPolish(i);
 //std::cin.get();
         for (Hypsize j(0); j < ass.hypcount(); ++j)
         {
-            Hypiter const hypj(ass.hypotheses[j]);
+            Hypiter const hypj(ass.hypiters[j]);
             if (hypj->second.second)
                 continue; // Skip floating hypotheses.
             // Match hypothesis j against key hypothesis i of the theorem.
@@ -212,7 +213,7 @@ Prop::size_type testpropsearch
 printass(*iter);
     Prop tree(iter, database, parameters);
     tree.play(sizelimit);
-//if (iter->first == "imim2i") tree.navigate();
+//if (iter->first == "pm2.21ddALT") tree.navigate();
     // Check answer
 tree.printstats();
     if (tree.size() > sizelimit)

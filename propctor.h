@@ -32,7 +32,7 @@ struct Propctors : public std::map<strview, Propctor>
 // # of auxiliary atoms start from atomcount.
 // Return true if okay. First auxiliary atom = hyps.size()
     bool addcnffromrPolish
-        (Proofsteps const & proofsteps, std::deque<Hypiter> const & hyps,
+        (Proofsteps const & proofsteps, Hypiters const & hyps,
          CNFClauses & cnf, Atom & atomcount) const;
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
     CNFClauses hypcnf(struct Assertion const & ass, Atom & count) const;

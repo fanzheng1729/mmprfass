@@ -1,39 +1,30 @@
 #include "ass.h"
 #include "util/find.h"
+#include "util/for.h"
 
-// Return iterator to the hypothesis matching the expression.
-// If there is no match, return the end iterator.
-Hypiteriter Assertion::matchhyp(Expression const & exp) const
+// Return index the hypothesis matching the expression.
+// If there is no match, return # hypotheses.
+Hypsize Assertion::matchhyp(Expression const & exp) const
 {
-    Hypiteriter iter(hypotheses.begin());
-    for ( ; iter != hypotheses.end(); ++iter)
-    {
-        Hypothesis const & hyp((*iter)->second);
-        if (hyp.second) // Skip floating hypothesis.
-            continue;
+    Hypsize i(0);
+    for ( ; i < hypcount(); ++i)
+        if (hypiters[i]->second.first == exp)
+            return i;
 
-        if (hyp.first == exp)
-            return iter; // A hypothesis matched
-    }
-
-    return iter;
+    return i;
 }
-Hypiteriter Assertion::matchhyp
-    (Proofsteps const & rPolish, strview typecode) const
+Hypsize Assertion::matchhyp(Proofsteps const & rPolish, strview typecode) const
 {
-    Hypiteriter iter(hypotheses.begin());
-    for ( ; iter != hypotheses.end(); ++iter)
+    Hypsize i(0);
+    for ( ; i < hypcount(); ++i)
     {
-        Hypothesis const & hyp((*iter)->second);
-        if (hyp.second) // Skip floating hypothesis.
-            continue;
-//std::cout << "Matching " << rPolish << "Against " << hyp.first;
+        Hypothesis const & hyp(hypiters[i]->second);
         if (!hyp.first.empty() && hyp.first[0] == typecode &&
-            hypsrPolish[iter - hypotheses.begin()] == rPolish)
-            return iter;
+            hypsrPolish[i] == rPolish)
+            return i;
     }
 
-    return iter;
+    return i;
 }
 
 // If rPolish of the expression matches a given pattern,
@@ -48,7 +39,7 @@ const char * Assertion::match(const int pattern[]) const
     Proofsize proofsize(0);
     for (Hypsize i(0); i < hypcount(); ++i)
     {
-        bool const isfloating(hypotheses[i]->second.second);
+        bool const isfloating(hypiters[i]->second.second);
         proofsize += !isfloating * hypsrPolish[i].size();
         if (pattern + proofsize > end || pattern[proofsize - 1] != 0)
             return NULL;
@@ -62,7 +53,7 @@ const char * Assertion::match(const int pattern[]) const
     Proofsteps proof;
     proof.reserve(proofsize);
     for (Hypsize i(0); i < hypcount(); ++i)
-        if (!hypotheses[i]->second.second)
+        if (!hypiters[i]->second.second)
             proof += hypsrPolish[i];
     proof += exprPolish;
     // # arguments.

@@ -59,7 +59,7 @@ struct Environ
     virtual Eval evaltheirleaf(Node const &) const = 0;
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address.
-    virtual Environ * subenv(Assiter iter) const = 0;
+    virtual Environ * makeenv(Assiter iter) const = 0;
     // Add a sub environment for the node. Return true iff it is added.
     bool addenviron(Node & node, strview label, Assertion const & newass);
     virtual ~Environ() {}

@@ -2,7 +2,6 @@
 #define PROOF_H_INCLUDED
 
 #include <cstddef>
-#include <deque>
 #include <functional>
 #include <map>
 #include <set>
@@ -91,10 +90,10 @@ typedef std::vector<Assiter> Assiters;
 typedef Hypotheses::const_iterator Hypiter;
 // Check if the name of the hypothesis pointed to is label.
 inline bool operator==(Hypiter iter, strview label) {return iter->first==label;}
-// Iterator to a list of hypothesis iterators
-typedef std::deque<Hypiter>::const_iterator Hypiteriter;
+// A sequence of hypothesis iterators
+typedef std::vector<Hypiter> Hypiters;
 // # of hypotheses
-typedef std::deque<Hypiter>::size_type Hypsize;
+typedef Hypiters::size_type Hypsize;
 
 // Append an expression to another.
 template<class T, class U>

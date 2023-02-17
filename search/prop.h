@@ -35,7 +35,7 @@ struct Prop : SearchBase
         CNFClauses cnf(hypcnf);
         Atom natom(hypatomcount);
         if (!m_database.propctors().addcnffromrPolish
-            (goal, m_assiter->second.hypotheses, cnf, natom))
+            (goal, m_assiter->second.hypiters, cnf, natom))
             return false;
         cnf.closeoff(true);
         return !cnf.sat();
@@ -46,7 +46,7 @@ struct Prop : SearchBase
         CNFClauses cnf;
         Atom natom(hypatomcount);
         m_database.propctors().addcnffromrPolish
-            (goal, m_assiter->second.hypotheses, cnf, natom);
+            (goal, m_assiter->second.hypiters, cnf, natom);
         cnf.closeoff(true);
         return cnf.sat(); // counter-satisfiable = needs hypotheses.
     }
@@ -66,7 +66,7 @@ struct Prop : SearchBase
     std::string subenvlabel(Node const &) const { return ""; }
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address.
-    virtual Prop * subenv(Assiter iter) const
+    virtual Prop * makeenv(Assiter iter) const
     {
         double const param[3] =
         {exploration()[0], exploration()[1], static_cast<double>(strategy)};
@@ -80,10 +80,10 @@ struct Prop : SearchBase
         assertion.expression.resize(1);
         for (Hypsize i(0); i < oldassertion.hypcount(); ++i)
         {
-            Hypiter iter(oldassertion.hypotheses[i]);
+            Hypiter iter(oldassertion.hypiters[i]);
             if (!iter->second.second)
                 continue; // Skip essential hypotheses.
-            assertion.hypotheses.push_back(iter);
+            assertion.hypiters.push_back(iter);
             assertion.hypsrPolish.push_back(oldassertion.hypsrPolish[i]);
             assertion.hypstree.push_back(oldassertion.hypstree[i]);
         }

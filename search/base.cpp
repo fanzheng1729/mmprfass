@@ -43,7 +43,7 @@ void SearchBase::printournode(Nodeptr ptr, bool detailed) const
     Proofsteps const & steps(ptr->game().pgoal->first);
     strview typecode(ptr->game().typecode);
     Hypsize i(lastmove.matchhyp(steps, typecode));
-    strview hyp(lastmove.pass->second.hypotheses[i]->first);
+    strview hyp(lastmove.pass->second.hypiters[i]->first);
     Goal goal = {&steps, typecode};
     std::cout << hyp << ' ' << ptr->eval().first << '*' << ptr.size()
               << '\t' << goal.expression();

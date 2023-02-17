@@ -79,9 +79,9 @@ static void preparestream(std::ios_base & ios, const char * chars)
     static std::vector<ctype::mask> masks(table, table + size);
     static ctype::mask * const data(masks.data());
 
-//std::cout << "Switching the whitespace states of " << chars << std::endl;
-    while (*chars)
-        masks[*chars++] ^= ctype::space;
+    std::size_t c;
+    for (c = *chars; c; c = *++chars)
+        masks[c] = table[c] ^ ctype::space;
 
     // Set the new character classifying table
     ios.imbue(std::locale(std::locale::classic(), new ctype(data)));

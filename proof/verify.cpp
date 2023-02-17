@@ -116,7 +116,7 @@ static bool verifyassertionref
     // Find the necessary substitutions.
     prealloc(substitutions, assertion.varsused);
     std::vector<Expression>::size_type const base = findsubstitutions
-        (thlabel,passref->first,passref->second.hypotheses,stack,substitutions);
+        (thlabel,passref->first,passref->second.hypiters,stack,substitutions);
     if (base == stack.size())
         return false;
 //std::cout << "Substitutions" << std::endl << substitutions;

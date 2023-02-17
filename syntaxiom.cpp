@@ -160,7 +160,7 @@ bool Syntaxioms::rPolish
     ass.hypstree.resize(ass.hypcount());
     for (Hypsize i(0); i < ass.hypcount(); ++i)
     {
-        Hypiter const iter(ass.hypotheses[i]);
+        Hypiter const iter(ass.hypiters[i]);
         exp = iter->second.first;
         if (exp.empty())
             return false;

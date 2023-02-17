@@ -11,7 +11,7 @@ struct Assertion
 {
 // Essential properties:
     // Hypotheses of this axiom or theorem.
-    std::deque<Hypiter> hypotheses;
+    Hypiters hypiters;
     Disjvars disjvars;
     // Statement of axiom or theorem.
     Expression expression;
@@ -41,16 +41,16 @@ struct Assertion
     unsigned type;
 // Functions:
     // # of hypotheses
-    Hypsize hypcount() const {return hypotheses.size();}
-    // Return iterator to the hypothesis matching the expression.
-    // If there is no match, return the end iterator.
-    Hypiteriter matchhyp(Expression const & exp) const;
-    Hypiteriter matchhyp(Proofsteps const & rPolish, strview type) const;
+    Hypsize hypcount() const {return hypiters.size();}
+    // Return index the hypothesis matching the expression.
+    // If there is no match, return # hypotheses.
+    Hypsize matchhyp(Expression const & exp) const;
+    Hypsize matchhyp(Proofsteps const & rPolish, strview type) const;
     // Check if the expression matches a hypothesis.
     bool istrivial(Expression const & exp) const
-    { return matchhyp(exp) != hypotheses.end(); }
+    { return matchhyp(exp) < hypcount(); }
     bool istrivial(Proofsteps const & rPolish, strview typecode) const
-    { return matchhyp(rPolish, typecode) != hypotheses.end(); }
+    { return matchhyp(rPolish, typecode) < hypcount(); }
     // length of the rev Polish notation of all hypotheses combined
     Expression::size_type hypslen() const
     {

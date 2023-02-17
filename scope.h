@@ -12,7 +12,7 @@ struct Scope
     // Active variables
     std::set<strview> activevariables;
     // Iterators to active hypotheses
-    std::vector<Hypiter> activehyp;
+    Hypiters activehyp;
     // Disjoint variables restrictions
     std::vector<Symbol2s> disjvars;
     // Map: variable -> label of active floating hypothesis
@@ -40,7 +40,7 @@ struct Scopes : std::vector<Scope>
     // two different variables.
     bool isdvr(strview var1, strview var2) const;
     // Determine mandatory disjoint variable restrictions.
-    Disjvars disjvars(std::set<strview> const & varsused) const;
+    Disjvars disjvars(Symbol2s const & varsused) const;
     // Complete an Assertion from its Expression. That is, determine the
     // mandatory hypotheses and disjoint variable restrictions and the #.
     void completeass(struct Assertion & ass) const;

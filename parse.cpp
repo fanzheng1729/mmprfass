@@ -110,7 +110,7 @@ static pProofs pproofsfromstack(Assertion const & ass, Substack const & stack)
     pProofs pproofs;
     pproofs.reserve(ass.hypcount()); // Preallocate for efficiency
 
-    FOR (Hypiter iter, ass.hypotheses)
+    FOR (Hypiter iter, ass.hypiters)
     {
         Hypothesis const & hyp(iter->second);
         if (unexpected(!hyp.second, "essential hypothesis", iter->first))

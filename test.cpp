@@ -193,7 +193,7 @@ bool Syntaxioms::checkrPolish
     (strview label, Assertion ass, struct Typecodes const & typecodes) const
 {
     Expression & exp(ass.expression);
-    std::deque<Hypiter> const & hyps(ass.hypotheses);
+    Hypiters const & hyps(ass.hypiters);
 
     if (exp.empty())
         return false;
@@ -204,19 +204,16 @@ bool Syntaxioms::checkrPolish
         return false;
 
     std::vector<Proofsteps> const & hypproofs(ass.hypsrPolish);
-    std::vector<Proofsteps>::const_iterator iterproof(hypproofs.begin());
-
-    for (Hypiteriter iterhyp(hyps.begin()); iterhyp != hyps.end();
-        ++iterhyp, ++iterproof)
+    for (Hypsize i(0); i < hyps.size(); ++i)
     {
-        if ((*iterhyp)->second.second)
+        if (hyps[i]->second.second)
             continue; // Floating hypothesis
-        exp = (*iterhyp)->second.first;
+        exp = hyps[i]->second.first;
         if (exp.empty())
             return false;
-//std::cout << "Checking hypothesis " << (*iterhyp)->first << ": " << exp;
+//std::cout << "Checking hypothesis " << hyps[i]->first << ": " << exp;
         exp[0] = typecodes.normalize(exp[0]);
-        if (!::checkrPolish(label, ass, *iterproof, splitters))
+        if (!::checkrPolish(label, ass, hypproofs[i], splitters))
             return false;
     }
 

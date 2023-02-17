@@ -35,18 +35,18 @@ private:
 // Read the proof labels of a compressed proof.
 // Discard tokens up to and including the closing parenthesis.
 // Returns proof steps if okay. Otherwise returns {NULL}.
-    Proofsteps getprooflabels(strview label, std::deque<Hypiter> const & hyps);
+    Proofsteps getprooflabels(strview label, Hypiters const & hyps);
 // Read a compressed proof. Discard tokens up to and including $.
 // Returns 1 if Okay, 0 on error, -1 if the proof is incomplete.
     int readcompressedproof
-        (strview label, std::deque<Hypiter> const & hyps, Proofsteps & steps);
+        (strview label, Hypiters const & hyps, Proofsteps & steps);
 // Read a regular proof. Discard tokens up to and including $.
 // Returns 1 if Okay, 0 on error, -1 if the proof is incomplete.
     int readregularproof(strview label, Proofsteps & steps);
 // Read a proof. Discard tokens up to and including $.
 // Returns 1 if Okay, 0 on error, -1 if the proof is incomplete.
     int readproof
-        (strview label, std::deque<Hypiter> const & hyps, Proofsteps & steps)
+        (strview label, Hypiters const & hyps, Proofsteps & steps)
     {
         if (m_tokens.front() != "(") // Regular (uncompressed proof)
             return readregularproof(label, steps);
@@ -172,7 +172,7 @@ static bool operator+=(Proofsteps & steps, Proofstep step)
 // Read the proof labels of a compressed proof.
 // Discard tokens up to and including the closing parenthesis.
 // Returns proof steps if okay. Otherwise returns {NULL}.
-Proofsteps Imp::getprooflabels(strview label, std::deque<Hypiter> const & hyps)
+Proofsteps Imp::getprooflabels(strview label, Hypiters const & hyps)
 {
     Proofsteps labels(hyps.begin(), hyps.end());
 //std::cout << labels.size() << " hypotheses in the theorem" << std::endl;
@@ -213,7 +213,7 @@ Proofsteps Imp::getprooflabels(strview label, std::deque<Hypiter> const & hyps)
 // Read a compressed proof. Discard tokens up to and including $.
 // Returns 1 if Okay, 0 on error, -1 if the proof is incomplete.
 int Imp::readcompressedproof
-    (strview label, std::deque<Hypiter> const & hyps, Proofsteps & steps)
+    (strview label, Hypiters const & hyps, Proofsteps & steps)
 {
     // Get labels
     Proofsteps const & labels(getprooflabels(label, hyps));
@@ -340,7 +340,7 @@ bool Imp::readp(strview label)
 
     // Get proof steps
     Proofsteps steps;
-    int okay(readproof(label, ass.hypotheses, steps));
+    int okay(readproof(label, ass.hypiters, steps));
     if (okay != 1) // Incomplete: -1 -> true, bad: 0 -> false
         return okay == -1;
 
