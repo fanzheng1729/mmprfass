@@ -213,7 +213,7 @@ Prop::size_type testpropsearch
 printass(*iter);
     Prop tree(iter, database, parameters);
     tree.play(sizelimit);
-//if (iter->first == "pm2.21ddALT") tree.navigate();
+//if (iter->first == "imp") tree.navigate();
     // Check answer
 tree.printstats();
     if (tree.size() > sizelimit)

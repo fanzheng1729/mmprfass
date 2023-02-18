@@ -2,6 +2,7 @@
 #define FILTER_H_INCLUDED
 
 #include <algorithm>
+#include <cstddef>
 #include <iterator>
 #include <set>
 
@@ -22,6 +23,20 @@ struct Filter
     }
     Container const & container;
     typename Container::const_iterator begin, end;
+};
+
+template<bool B, class T, std::size_t N>
+struct Filter<B, T[N]>
+{
+    typedef T argument_type;
+    typedef bool result_type;
+    Filter(const T(&array)[N]) : container(array), begin(array), end(array + N) {}
+    template<class U> bool operator()(U const & value) const
+    {
+        return (std::find(begin, end, value) != end) == B;
+    }
+    const T(&container)[N];
+    const T * begin, * end;
 };
 
 // Filter checking if an obj is in a container using @std::find() function

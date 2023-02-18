@@ -69,7 +69,7 @@ bool Environ::addenviron(Node & node, strview label, Assertion const & ass)
     {
         // Sub environment already exists.
         // Point the node's environment to it.
-        node.penv = iter->second.get();
+        node.penv = iter->second;
         return false;
     }
 //std::cout << "Adding sub environment for " << node.pgoal->first;
@@ -80,7 +80,7 @@ bool Environ::addenviron(Node & node, strview label, Assertion const & ass)
         (subassertions.insert(std::make_pair(iter->first, ass)).first);
     // Pointer to the sub environment
     Environ * penv(makeenv(assiter));
-    iter->second.reset(penv);
+    iter->second = penv;
     // Prepare the sub environment.
     penv->m_assiter = assiter;
     // Point the node's environment to the sub environment.

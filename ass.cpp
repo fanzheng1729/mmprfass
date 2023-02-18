@@ -1,5 +1,6 @@
+//#include <iostream>
 #include "ass.h"
-#include "util/find.h"
+#include "util/filter.h"
 #include "util/for.h"
 
 // Return index the hypothesis matching the expression.
@@ -39,11 +40,12 @@ const char * Assertion::match(const int pattern[]) const
     Proofsize proofsize(0);
     for (Hypsize i(0); i < hypcount(); ++i)
     {
-        bool const isfloating(hypiters[i]->second.second);
-        proofsize += !isfloating * hypsrPolish[i].size();
-        if (pattern + proofsize > end || pattern[proofsize - 1] != 0)
-            return NULL;
-        if (!isfloating && hypsrPolish[i].back() != exprPolish.back())
+        if (hypiters[i]->second.second)
+            continue; // Skip floating hypotheses.
+
+        proofsize += hypsrPolish[i].size();
+        if (pattern + proofsize > end || pattern[proofsize - 1] != 0 ||
+            hypsrPolish[i].back() != exprPolish.back())
             return NULL;
     }
     proofsize += exprPolish.size();
@@ -86,7 +88,10 @@ Equalities equalities(Assertions const & assertions)
 
     Equalities result;
     FOR (Assertions::const_reference ass, assertions)
+    {
+//std::cout << ass.first.c_str;
         for (int i(0); i < 3; ++i)
+        {
             if (const char * label = ass.second.match(patterns[i]))
             {
 #if __cplusplus < 201103L
@@ -94,10 +99,12 @@ Equalities equalities(Assertions const & assertions)
 #endif // __cplusplus < 201103L
                 result[label][i] = ass.first.c_str;
             }
+        }
+    }
 
     for (Equalities::iterator iter(result.begin()); iter != result.end(); )
     {
-        if (util::find(iter->second, (const char *)(0)) == iter->second + 3)
+        if (!util::filter(iter->second)(static_cast<const char *>(NULL)))
             ++iter;
         else
             result.erase(iter++);

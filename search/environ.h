@@ -62,18 +62,18 @@ struct Environ
     virtual Environ * makeenv(Assiter iter) const = 0;
     // Add a sub environment for the node. Return true iff it is added.
     bool addenviron(Node & node, strview label, Assertion const & newass);
-    virtual ~Environ() {}
+    virtual ~Environ()
+    {
+        FOR (Subenvs::value_type subenv, subenvs)
+            delete subenv.second;
+    }
 protected:
     // Iterator to the assertion to be proved
     Assiter m_assiter;
     // Assertions corresponding to sub environments
     Assertions subassertions;
     // Polymorphic sub environments
-#if __cplusplus >= 201103L
-    typedef std::map<std::string, std::unique_ptr<Environ> > Subenvs;
-#else
-    typedef std::map<std::string, std::auto_ptr<Environ> > Subenvs;
-#endif // __cplusplus >= 201103L
+    typedef std::map<std::string, Environ *> Subenvs;
     Subenvs subenvs;
 private:
     // Set of goals looked at
