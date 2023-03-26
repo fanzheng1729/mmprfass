@@ -58,7 +58,7 @@ struct Prop : SearchBase
         if (okay)
             return Eval(1, true);
 //std::cout << "Evaluating " << node;
-        const_cast<Prop &>(*this).addenviron(const_cast<Node &>(node));
+        const_cast<Prop &>(*this).addsubenv(const_cast<Node &>(node));
         Proofsize newhypslen(static_cast<Prop *>(node.penv)->hypslen);
         return eval(newhypslen + node.pgoal->first.size() + node.defercount());
     }
@@ -91,8 +91,8 @@ struct Prop : SearchBase
         assertion.disjvars = oldassertion.disjvars;
         return assertion;
     }
-    // Add a sub environment for the node.
-    void addenviron(Node & node)
+    // Add a sub environment for the node. Return true iff it is added.
+    void addsubenv(Node & node)
     {
         Assertion const & oldass(m_assiter->second);
         if (oldass.hypcount()==oldass.varcount() || node.pgoal->second.hypsneeded)
@@ -101,7 +101,7 @@ struct Prop : SearchBase
         std::string const & label(subenvlabel(node));
         Assertion const & newass(subenvs.count(label) ? oldass:
                                  subassertion(node));
-        if (Environ::addenviron(node, label, newass))
+        if (Environ::addsubenv(node, label, newass))
             static_cast<Prop *>(node.penv)->clear();
     }
     virtual Eval evalparent(Nodeptr ptr) const

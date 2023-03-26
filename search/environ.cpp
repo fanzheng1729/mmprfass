@@ -1,5 +1,4 @@
 #include "environ.h"
-#include "io.h"
 #include "move.h"
 #include "node.h"
 
@@ -32,6 +31,7 @@ bool Environ::done(Goals::pointer pgoal, strview typecode) const
     return true;
 }
 
+//#include "io.h"
 // Add proof for a node using an assertion.
 void Environ::writeproof(Node const & node) const
 {
@@ -61,8 +61,8 @@ void Environ::writeproof(Node const & node) const
 //std::cout << "Written proof\n" << node.pgoal->first << node.pgoal->second.proofsteps;
 }
 
-// Add a sub environment for the node.
-bool Environ::addenviron(Node & node, strview label, Assertion const & ass)
+// Add a sub environment for the node. Return true iff it is added.
+bool Environ::addsubenv(Node & node, strview label, Assertion const & ass)
 {
     Subenvs::iterator iter(subenvs.find(label));
     if (iter != subenvs.end())

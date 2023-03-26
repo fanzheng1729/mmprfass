@@ -1,4 +1,3 @@
-//#include <iostream>
 #include "ass.h"
 #include "util/filter.h"
 #include "util/for.h"
@@ -76,6 +75,7 @@ const char * Assertion::match(const int pattern[]) const
     return exprPolish.back();
 }
 
+//#include <iostream>
 // Find the equivalence relations and their justifications among syntax axioms.
 Equalities equalities(Assertions const & assertions)
 {

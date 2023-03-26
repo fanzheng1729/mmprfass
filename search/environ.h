@@ -61,10 +61,10 @@ struct Environ
     // Return its address.
     virtual Environ * makeenv(Assiter iter) const = 0;
     // Add a sub environment for the node. Return true iff it is added.
-    bool addenviron(Node & node, strview label, Assertion const & newass);
+    bool addsubenv(Node & node, strview label, Assertion const & newass);
     virtual ~Environ()
     {
-        FOR (Subenvs::value_type subenv, subenvs)
+        FOR (Subenvs::const_reference subenv, subenvs)
             delete subenv.second;
     }
 protected:

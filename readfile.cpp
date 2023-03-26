@@ -39,11 +39,6 @@ static Token nexttoken(std::istream & in)
     return token;
 }
 
-static void readfileerr(const char * msg, const char * name)
-{
-    std::cerr << msg << ' ' << name << std::endl;
-}
-
 // Read file name in file inclusion commands ($4.1.2).
 // Return the file name if okay; otherwise return the empty string.
 static std::string readfilename(std::ifstream & in)
@@ -85,6 +80,12 @@ static void preparestream(std::ios_base & ios, const char * chars)
 
     // Set the new character classifying table
     ios.imbue(std::locale(std::locale::classic(), new ctype(data)));
+}
+
+// Show error message for reading the file.
+static void readfileerr(const char * msg, const char * name)
+{
+    std::cerr << msg << ' ' << name << std::endl;
 }
 
 // Associate the file stream with the file. Returns true if okay.
@@ -159,7 +160,7 @@ static bool readtokens
 
             if (!readtokens(newfilename.c_str(), names, tokens, comments))
             {
-                readfileerr("Error reading from included ", newfilename.c_str());
+                readfileerr("Error reading from included", newfilename.c_str());
                 return false;
             }
 

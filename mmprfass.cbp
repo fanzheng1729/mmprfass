@@ -12,6 +12,9 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="setn-pred.mm ZFC" />
+				<Compiler>
+					<Add option="-std=c++98" />
+				</Compiler>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/mmprfass" prefix_auto="1" extension_auto="1" />

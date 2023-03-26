@@ -752,7 +752,7 @@
 	"io.h"
 	"strview.h"
 
-1676684860 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1676763369 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"comment.h"
@@ -953,7 +953,7 @@
 	"token.h"
 	"proof/verify.h"
 
-1676636526 source:c:\users\elitebook\downloads\metamath\mmprfass\readfile.cpp
+1679774467 source:c:\users\elitebook\downloads\metamath\mmprfass\readfile.cpp
 	<algorithm>
 	<cctype>
 	<fstream>
@@ -1082,8 +1082,7 @@
 
 1672430077 c:\users\elitebook\downloads\metamath\mmprfass\read.h
 
-1676763318 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
-	<iostream>
+1679774070 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
 	"ass.h"
 	"util/filter.h"
 	"util/for.h"
@@ -1244,12 +1243,12 @@
 1676213589 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1676685263 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1676763361 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1676654711 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1679774916 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../database.h"
@@ -1281,15 +1280,14 @@
 	"base.h"
 	"io.h"
 
-1676759949 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+1679775151 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
 	<cstddef>
 	<memory>
 	"../proof/step.h"
 	"../util/for.h"
 
-1676760003 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
+1679774794 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
 	"environ.h"
-	"io.h"
 	"move.h"
 	"node.h"
 
