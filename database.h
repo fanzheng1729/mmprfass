@@ -54,8 +54,8 @@ public:
     bool hasvar(strview str) const { return varIDmap().count(str); }
     bool addvar(strview str)
     {
-        bool const okay
-        (m_varIDmap.insert(std::make_pair(str, varIDmap().size())).second);
+        VarIDmap::value_type value(str, varIDmap().size());
+        bool const okay(m_varIDmap.insert(value).second);
         if (okay)
             m_varvec.push_back(str);
         return okay;
@@ -63,8 +63,8 @@ public:
     bool hashyp(strview label) const { return hypotheses().count(label); }
     Hypiter addhyp(strview label, Expression const & exp, bool const floating)
     {
-        Hypotheses::iterator result
-            (m_hypotheses.insert(std::make_pair(label, Hypothesis())).first);
+        Hypotheses::value_type value(label, Hypothesis());
+        Hypotheses::iterator result(m_hypotheses.insert(value).first);
         result->second.first = exp;
         result->second.second = floating;
         return result;

@@ -107,7 +107,7 @@ Disjvars Scopes::disjvars(Symbol2s const & varsused) const
             {
                 Symbol2s::iterator diter2(diter);
                 for (++diter2; diter2 != dset.end(); ++diter2)
-                    result.insert(std::make_pair(*diter, *diter2));
+                    result.insert(Disjvars::value_type(*diter, *diter2));
             }
         }
 
@@ -144,8 +144,8 @@ void Scopes::completeass(struct Assertion & ass) const
             {
 //std::cout << "Mandatory floating Hypothesis: " << hypexp;
                 ass.hypiters.push_back(iterhyp);
-                ass.varsused.insert(std::make_pair(hypexp[1],
-                                                   Bvector(1, false)));
+                Varsused::value_type value(hypexp[1], Bvector(1, false));
+                ass.varsused.insert(value);
 //std::cout << hypexp[1] << " 0\t";
             }
             else if (!hyp.second)

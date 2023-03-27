@@ -5,6 +5,7 @@
 #include <functional>
 #include "environ.h"
 #include "../io.h"
+#include "../util/iter.h"
 #include "move.h"
 
 // Proof goal
@@ -15,27 +16,12 @@ struct Goal
     Expression expression() const
     {
         Expression result(verifyproofsteps(*prPolish));
-        result[0] = typecode;
+        if (!result.empty()) result[0] = typecode;
         return result;
     }
+    operator==(Goal other) const
+    { return prPolish == other.prPolish && typecode == other.typecode; }
 };
-
-inline operator==(Goal goal1, Goal goal2)
-{
-    return goal1.typecode == goal2.typecode && goal1.prPolish == goal2.prPolish;
-}
-
-inline const void * stepptr(Proofstep step)
-{
-    if (step.type == Proofstep::HYP)
-        return step.phyp;
-    else
-        return step.pass;
-}
-inline bool operator<(Proofstep step1, Proofstep step2)
-{
-    return std::less<const void *>()(stepptr(step1), stepptr(step2));
-}
 
 // Node in proof search tree
 struct Node
@@ -53,14 +39,14 @@ struct Node
     // Essential hypotheses needed, if not our turn
     std::vector<Environ::Goals::pointer> hypvec;
     std::set<Environ::Goals::pointer> hypset;
-    // Pointer to the search environment
-    Environ * penv;
-    Node() : pgoal(NULL), typecode(NULL), pparent(NULL), penv(NULL) {}
+    // Pointer to the current and initial environments
+    Environ *penv, *penv0;
+    Node() : pgoal(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
     Node(Environ::Goals::pointer goal, strview type, Environ * p = NULL) :
-        pgoal(goal), typecode(type), pparent(NULL), penv(p) {}
+        pgoal(goal), typecode(type), pparent(NULL), penv(p), penv0(p) {}
     Node(Node const & node) :
         pgoal(node.pgoal), typecode(node.typecode), pparent(&node),
-        penv(node.penv) {}
+        penv(node.penv), penv0(node.penv0) {}
     // # of defers to the node
     std::size_t defercount() const
     {
@@ -73,12 +59,17 @@ struct Node
     {
         Goal goal = {&node.pgoal->first, node.typecode};
         out << goal.expression();
-
         if (node.attempt.type != Move::NONE)
             out << "Proof attempt (" << node.defercount() << ") "
                 << node.attempt << std::endl;
-
         return out;
+    }
+    // Set the hypothesis set of a node.
+    void sethyps()
+    {
+        std::remove_copy_if(hypvec.begin(), hypvec.end(),
+                            end_inserter(hypset),
+                            std::logical_not<const void *>());
     }
     // Check if the hypotheses of node 1 includes those of node 2.
     bool operator>=(Node const & node) const
@@ -141,6 +132,27 @@ struct Node
             return result;
         }
         return Moves(attempt.type == Move::DEFER, Move::DEFER);
+    }
+    // Add proof for a node using an assertion.
+    void writeproof() const
+    {
+        if (attempt.type != Move::ASS)
+            return;
+        // Pointers to proofs of hypotheses
+        pProofs hyps(attempt.hypcount());
+        for (Hypsize i(0); i < attempt.hypcount(); ++i)
+        {
+            if (attempt.isfloating(i))
+                hyps[i] = &attempt.substitutions[attempt.hypiter(i)->second.first[1]];
+            else
+                hyps[i] = &hypvec[i]->second.proofsteps;
+//std::cout << "Added hyp\n" << *hyps.back();
+        }
+
+        // The whose proof
+        pgoal->second.status = Environ::PROVEN;
+        ::writeproof(pgoal->second.proofsteps, attempt.pass, hyps);
+//std::cout << "Written proof\n" << pgoal->first << pgoal->second.proofsteps;
     }
 };
 

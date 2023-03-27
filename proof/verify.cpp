@@ -39,36 +39,30 @@ Proofsteps regularproofsteps
     return util::filter(result)((const char *)0) ? Proofsteps() : result;
 }
 
+static bool printinproofof(strview thlabel, bool okay = false)
+{
+    if (!okay)
+        std::cerr << " in proof of theorem " << thlabel << std::endl;
+    return okay;
+}
+
 // Check if there is enough item on the stack for hypothesis verification.
 bool enoughitemonstack
     (std::size_t hypcount, std::size_t stacksize, strview label)
 {
     static const char hypfound[] = " hypotheses found, ";
     bool const okay(is1stle2nd(hypcount, stacksize, hypfound, itemonstack));
-    if (!okay)
-        std::cerr << "in proof of theorem " << label << std::endl;
-    return okay;
+    return printinproofof(label, okay);
 }
 
 void printunificationfailure
     (strview thlabel, strview reflabel, Hypothesis const & hyp,
      Expression const & dest, Expression const & stackitem)
 {
-    std::cout << "In step " << reflabel << " in proof of theorem " << thlabel
-              << ", " << (hyp.second ? "floating" : "essential")
+    std::cout << "In step " << reflabel; printinproofof(thlabel);
+    std::cout << (hyp.second ? "floating" : "essential")
               << " hypothesis " << hyp.first << "expanded to\n" << dest
               << "does not match stack item\n" << stackitem;
-}
-
-// Check if the index of a load step is within the bound.
-bool enoughsavedsteps
-    (Proofstep::Index index, Proofstep::Index savedsteps, strview label)
-{
-    bool const okay(is1stle2nd(index + 1, savedsteps,
-                               "steps needed", "steps saved"));
-    if (!okay)
-        std::cerr << "in compressed proof of " << label << std::endl;
-    return okay;
 }
 
 static void printdisjvarserr
@@ -125,9 +119,8 @@ static bool verifyassertionref
     if (pthm)
         if (!checkdisjvars(pthm->second, assertion.disjvars, substitutions))
         {
-            std::cerr << "In step " << passref->first
-                      << " of proof of " << thlabel << std::endl;
-            return false;
+            std::cerr << "In step " << passref->first;
+            return printinproofof(thlabel);
         }
 
     // Insert new statement onto stack.
@@ -136,6 +129,15 @@ static bool verifyassertionref
     stack.erase(stack.begin() + base, stack.end() - 1);
 
     return true;
+}
+
+// Check if the index of a load step is within the bound.
+static bool enoughsavedsteps
+    (Proofstep::Index index, Proofstep::Index savedsteps, strview label)
+{
+    bool const okay(is1stle2nd(index + 1, savedsteps,
+                               "steps needed", "steps saved"));
+    return printinproofof(label, okay);
 }
 
 // Subroutine for proof verification. Verify proof steps.
@@ -159,31 +161,29 @@ Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm)
 //std::cout << "Applying assertion: " << step.pass->first << '\n';
             if (!verifyassertionref(pthm, step.pass, stack, substitutions))
                 return Expression();
-//std::cout << "Top of stack: " << stack.back();
             break;
         case Proofstep::LOAD:
 //std::cout << "Loading saved step " << step.index << std::endl;
             if (!enoughsavedsteps(step.index, savedsteps.size(), thlabel))
                 return Expression();
             stack.push_back(savedsteps[step.index]);
-//std::cout << "Top of stack: " << stack.back();
             break;
         case Proofstep::SAVE:
 //std::cout << "Saving step " << savedsteps.size() << std::endl;
             if (stack.empty())
             {
-                std::cerr << "No step to save in compressed proof of "
-                          << thlabel << std::endl;
+                std::cerr << "No step to save";
+                printinproofof(thlabel);
                 return Expression();
             }
             savedsteps.push_back(stack.back());
-//std::cout << "Saved step: " << savedsteps.back();
             break;
         default:
-            std::cerr << "Invalid step in compressed proof of " << thlabel
-                      << std::endl;
+            std::cerr << "Invalid step";
+            printinproofof(thlabel);
             return Expression();
         }
+//std::cout << "Top of stack: " << stack.back();
     }
 
     if (stack.size() != 1)

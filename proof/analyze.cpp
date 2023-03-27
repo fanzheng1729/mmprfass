@@ -107,7 +107,7 @@ Proof splitproof
                 break;
         if (i == subproofs.size())
             // Record the new subproof.
-            subproofs.push_back(std::make_pair(begin, end));
+            subproofs.push_back(Subprf(begin, end));
         // Add the subproof.
         result.push_back(util::hex(i));
 
@@ -204,7 +204,7 @@ static bool findsubstitutions
             if (result[id].second > result[id].first)
                 return util::equal(expbegin, expend,
                                    result[id].first, result[id].second);
-            result[id] = std::make_pair(expbegin, expend);
+            result[id] = Subprfstep(expbegin, expend);
             return true;
         }
     case Proofstep::ASS:

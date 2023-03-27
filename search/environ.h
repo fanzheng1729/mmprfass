@@ -13,42 +13,51 @@ typedef std::vector<Move> Moves;
 // Node in proof search tree
 struct Node;
 
+inline const void * stepptr(Proofstep step)
+{
+    if (step.type == Proofstep::HYP)
+        return step.phyp;
+    else
+        return step.pass;
+}
+inline bool operator<(Proofstep step1, Proofstep step2)
+{
+    return std::less<const void *>()(stepptr(step1), stepptr(step2));
+}
+
 // Proof search environment, containing relevant data
 struct Environ
 {
     // Evaluation (value, sure?)
     typedef std::pair<double, bool> Eval;
     Environ(Assiter iter) : m_assiter(iter) {}
-    enum Value {PROVEN = 1, PENDING = 0, FALSE = -1, NEW = -2};
+    // Proof status of a goal
+    enum Status {PROVEN = 1, PENDING = 0, FALSE = -1, NEW = -2};
     // Data associated with the goal
     struct Goaldata
     {
-        Value value;
-        operator Value() const { return value; }
+        Status status;
+        operator Status() const { return status; }
         // Proof of the expression
         Proofsteps proofsteps;
-        Goaldata(Value v = PENDING, Proofsteps const & steps = Proofsteps()) :
-            value(v), proofsteps(steps) {}
+        Goaldata(Status s = PENDING, Proofsteps const & steps = Proofsteps()) :
+            status(s), proofsteps(steps) {}
         // If the goal needs hypotheses, i.e., holds conditionally.
         bool hypsneeded;
     };
     // Map: goal -> Evaluation
     typedef std::map<Proofsteps, Goaldata> Goals;
-    Goals::pointer addgoal(Proofsteps const & goal, Value value = PENDING)
-    { return &*goals.insert(std::make_pair(goal, value)).first; }
+    Goals::pointer addgoal(Proofsteps const & goal, Status s = PENDING)
+    { return &*goals.insert(Goals::value_type(goal, s)).first; }
     // Check if an expression is proven or hypothesis.
     // If so, record its proof. Return true iff okay.
     bool done(Goals::pointer pgoal, strview typecode) const;
-    // Add proof for a node using an assertion.
-    void writeproof(Node const & node) const;
-    // Proof of the assertion, if any
-    Proofsteps proof() const;
-    // # goals proven
-    Goals::size_type countgoal(Value type) const
+    // # goals of a given status
+    Goals::size_type countgoal(Status status) const
     {
         Goals::size_type n(0);
         FOR (Goals::const_reference goal, goals)
-            n += (goal.second == type);
+            n += (goal.second == status);
         return n;
     }
     // Move generator, supplied by derived class
@@ -60,8 +69,10 @@ struct Environ
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address.
     virtual Environ * makeenv(Assiter iter) const = 0;
+    // Return the simplified assertion for the goal of the node to hold.
+    virtual Assertion assertion(Node const &) const = 0;
     // Add a sub environment for the node. Return true iff it is added.
-    bool addsubenv(Node & node, strview label, Assertion const & newass);
+    bool addsubenv(Node const & node, strview label);
     virtual ~Environ()
     {
         FOR (Subenvs::const_reference subenv, subenvs)
@@ -70,14 +81,14 @@ struct Environ
 protected:
     // Iterator to the assertion to be proved
     Assiter m_assiter;
+private:
+    // Set of goals looked at
+    Goals goals;
     // Assertions corresponding to sub environments
     Assertions subassertions;
     // Polymorphic sub environments
     typedef std::map<std::string, Environ *> Subenvs;
     Subenvs subenvs;
-private:
-    // Set of goals looked at
-    Goals goals;
 };
 
 #endif // ENVIRON_H_INCLUDED

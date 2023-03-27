@@ -24,7 +24,7 @@ static Argtypes argtypes(Proofsteps const & assrPolish)
 }
 
 // Return the sum of the sizes of substituted arguments.
-Proofsize argssize
+static Proofsize argssize
     (Argtypes const & argtypes, Genresult const & result,
      Genstack const & stack)
 {
@@ -50,6 +50,19 @@ static Proofsteps writerPolish
     return rPolish;
 }
 
+// Adds a generated term.
+struct Termadder : Adder
+{
+    Terms & terms;
+    Proofstep root;
+    Termadder(Terms & terms, Proofstep root) : terms(terms), root(root) {}
+    virtual void operator()(Argtypes const & types, Genresult const & result,
+                            Genstack const & stack)
+    {
+        terms.push_back(writerPolish(types, result, stack, root));
+    }
+};
+
 // Generate all terms of size 1.
 static Terms generateupto1
     (Varsused const & varsused, Syntaxioms const & syntaxioms, strview type)
@@ -73,17 +86,61 @@ static Terms generateupto1
     return terms;
 }
 
-// Adds a generated term.
-struct Termadder
+// Generate all terms for all arguments with rPolish up to a given size.
+void dogenerate
+    (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
+     Proofsize argcount, Argtypes const & argtypes, Proofsize size,
+     Genresult & result, Termcounts & counts, Adder & adder)
 {
-    Terms & terms;
-    Proofstep const & root;
-    void operator()(Argtypes const & types, Genresult const & result,
-                    Genstack const & stack)
+    // Stack of terms to be tried
+    Genstack stack;
+    // Preallocate for efficiency.
+    stack.reserve(argcount);
+    do
     {
-        terms.push_back(writerPolish(types, result, stack, root));
-    }
-};
+        if (stack.size() < argcount) // Not all arguments seen
+        {
+            strview type(argtypes[stack.size()]);
+            generateupto(varsused, syntaxioms, type, size - 1, result, counts);
+            if (result[type].empty()) // No term generated
+                break;
+
+            if (argcount - stack.size() > 1) // At least 2 arguments not seen
+                stack.push_back(0);
+            else
+            {
+                // Size of the only unseen argument
+                Proofsize const lastsize(size - 1 -
+                                         argssize(argtypes, result, stack));
+                // 1st substitution with that size
+                stack.push_back(counts[type][lastsize - 1]);
+            }
+            continue;
+        }
+        // All arguments seen. Write rPolish of term.
+        adder(argtypes, result, stack);
+//std::cout << "New term: " << terms.back();
+        // Try the next substitution.
+        while (!stack.empty())
+        {
+            // Check if the size of the last substitution is maximal.
+            if (argssize(argtypes, result, stack)
+                < size - 1 - argcount + stack.size())
+                break;
+            // Type of the last substitution
+            strview type(argtypes[stack.size() - 1]);
+            // Index of the last substitution
+            Terms::size_type const index(stack.back());
+            if (index < counts[type][result[type][index].size()] - 1)
+                break;
+            stack.pop_back();
+        }
+        if (!stack.empty())
+            ++stack.back();
+        else
+            break;
+    } while (!stack.empty());
+}
 
 void generateupto
     (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
@@ -122,7 +179,7 @@ void generateupto
             continue; // Bad syntax axiom.
 
         // Callback functor to add terms
-        Termadder adder = {terms, ass.exprPolish.back()};
+        Termadder adder(terms, ass.exprPolish.back());
         // # of arguments, at least 1
         Proofsize const argcount(ass.exprPolish.size() - 1);
         // Main loop of term generation

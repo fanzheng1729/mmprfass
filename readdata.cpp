@@ -144,8 +144,8 @@ Assertions::iterator Database::addass
     (strview label, Expression const & exp, struct Scopes const & scopes,
      bool isaxiom)
 {
-    Assertions::iterator iter
-        (m_assertions.insert(std::make_pair(label, Assertion())).first);
+    Assertions::value_type value(label, Assertion());
+    Assertions::iterator iter(m_assertions.insert(value).first);
     Assertion & ass(iter->second);
     ass.expression = exp;
     scopes.completeass(ass);

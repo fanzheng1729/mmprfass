@@ -41,6 +41,11 @@ struct Move
         return result;
     }
     strview exptypecode() const { return pass->second.expression[0]; }
+    // Hypothesis (must be of type ASS)
+    Hypiter hypiter(Hypsize index) const { return pass->second.hypiters[index]; }
+    strview hyptypecode(Hypsize index) const
+    { return hypiter(index)->second.first[0]; }
+    bool isfloating(Hypsize index) const { return hypiter(index)->second.second; }
     // Hypothesis the attempt (must be of type ASS) needs
     Proofsteps hyprPolish(Hypsize index) const
     {
@@ -48,10 +53,6 @@ struct Move
         makesubstitution(pass->second.hypsrPolish[index],
                          result, substitutions, Proofstep::id);
         return result;
-    }
-    strview hyptypecode(Hypsize index) const
-    {
-        return pass->second.hypiters[index]->second.first[0];
     }
     // Find the index of hypothesis by expression.
     Hypsize matchhyp(Proofsteps const & proofsteps, strview typecode) const
@@ -67,9 +68,6 @@ struct Move
     Hypsize hypcount() const { return pass->second.hypcount(); }
     // # of variables the attempt (must be of type ASS) needs
     Symbol3s::size_type varcount() const { return pass->second.varcount(); }
-    // Check if a hypothesis is floating
-    bool isfloating(Hypsize index) const
-    { return pass->second.hypiters[index]->second.second; }
     // Return true if the assertion applied has no essential hypothesis.
     bool closes() const { return type == ASS && hypcount() == varcount(); }
     // Output the move (must be our move).

@@ -23,10 +23,6 @@ void printunificationfailure
     (strview thlabel, strview reflabel, Hypothesis const & hyp,
      Expression const & dest, Expression const & stackitem);
 
-// Check if the index of a load step is within the bound.
-bool enoughsavedsteps
-    (Proofstep::Index index, Proofstep::Index savedsteps, strview label = "");
-
 // Append a subexpression to an expression.
 template<class Iter>
 Expression & operator+=(Expression & exp, std::pair<Iter, Iter> subexp)
@@ -115,7 +111,7 @@ typename std::vector<EXP>::size_type findsubstitutions
 }
 
 // Subroutine for proof verification. Verify proof steps.
-Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm = 0);
+Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm = NULL);
 // Verify a regular proof. The "proof" argument should be a non-empty sequence
 // of valid labels. Return the statement the "proof" proves.
 // Return the empty expression if the "proof" is invalid.

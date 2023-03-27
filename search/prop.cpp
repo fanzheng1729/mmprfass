@@ -23,7 +23,7 @@ Prop::Eval Prop::evaltheirleaf(Node const & node) const
             eval = neweval;
     }
     if (eval == 1)
-        writeproof(node);
+        node.writeproof();
     return Eval(eval, eval == 1);
 }
 
@@ -37,14 +37,14 @@ bool Prop::valid(Move const & move) const
 
         Proofsteps const & goal(move.hyprPolish(i));
         Goals::pointer pgoal(((Environ &)(*this)).addgoal(goal, NEW));
-        Value const value(pgoal->second.value);
-        if (value == PROVEN || value == PENDING)
+        Status const status(pgoal->second.status);
+        if (status == PROVEN || status == PENDING)
             continue; // goal checked to be true
-        if (value == FALSE)
+        if (status == FALSE)
             return false; // goal checked to be false
         // New goal
         const bool okay(valid(goal));
-        pgoal->second.value = okay ? PENDING : FALSE;
+        pgoal->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
         pgoal->second.hypsneeded = hypsneeded(goal);
@@ -94,12 +94,15 @@ void Prop::addhypmoves(Move const & move, Moves & moves,
 }
 
 // Adds substitutions to a move.
-struct Substadder
+struct Substadder : Adder
 {
     Expression const & freevars;
     Moves & moves;
     Move & move;
     Prop const & prop;
+    Substadder(Expression const & freevars, Moves & moves, Move & move,
+               Prop const & prop) :
+                   freevars(freevars), moves(moves), move(move), prop(prop) {}
     void operator()(Argtypes const & types, Genresult const & result,
                     Genstack const & stack)
     {
@@ -138,7 +141,7 @@ void Prop::addhardmove(Assiter iter, Proofsize size, Move & move,
         generateupto(varsused, syntaxioms, var.typecode(), size,
                      genresult, termcounts);
     // Generate substitutions.
-    Substadder adder = {freevars, moves, move, *this};
+    Substadder adder(freevars, moves, move, *this);
     dogenerate(varsused, syntaxioms, nfreevars, types, size+1,
                genresult, termcounts, adder);
 //std::cout << moves;

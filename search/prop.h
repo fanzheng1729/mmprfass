@@ -54,12 +54,11 @@ struct Prop : SearchBase
     virtual Eval evaltheirleaf(Node const & node) const;
     virtual Eval evalourleaf(Node const & node) const
     {
-        bool const okay(done(node.pgoal, node.typecode));
-        if (okay)
+        if (done(node.pgoal, node.typecode))
             return Eval(1, true);
 //std::cout << "Evaluating " << node;
-        const_cast<Prop &>(*this).addsubenv(const_cast<Node &>(node));
-        Proofsize newhypslen(static_cast<Prop *>(node.penv)->hypslen);
+        addsubenv(node);
+        Proofsize const newhypslen(static_cast<Prop *>(node.penv)->hypslen);
         return eval(newhypslen + node.pgoal->first.size() + node.defercount());
     }
     // Returns the label of a sub environment from a node.
@@ -72,36 +71,35 @@ struct Prop : SearchBase
         {exploration()[0], exploration()[1], static_cast<double>(strategy)};
         return new Prop(iter, m_database, param);
     }
-    Assertion subassertion(Node const &) const
+    // Return the simplified assertion for the goal of the node to hold.
+    virtual Assertion assertion(Node const &) const
     {
-        Assertion assertion;
-        Assertion const & oldassertion(m_assiter->second);
-        assertion.number = oldassertion.number;
-        assertion.expression.resize(1);
-        for (Hypsize i(0); i < oldassertion.hypcount(); ++i)
+        Assertion result;
+        Assertion const & oldass(m_assiter->second);
+        result.number = oldass.number;
+        result.expression.resize(1);
+        for (Hypsize i(0); i < oldass.hypcount(); ++i)
         {
-            Hypiter iter(oldassertion.hypiters[i]);
+            Hypiter iter(oldass.hypiters[i]);
             if (!iter->second.second)
                 continue; // Skip essential hypotheses.
-            assertion.hypiters.push_back(iter);
-            assertion.hypsrPolish.push_back(oldassertion.hypsrPolish[i]);
-            assertion.hypstree.push_back(oldassertion.hypstree[i]);
+            result.hypiters.push_back(iter);
+            result.hypsrPolish.push_back(oldass.hypsrPolish[i]);
+            result.hypstree.push_back(oldass.hypstree[i]);
         }
-        assertion.varsused = oldassertion.varsused;
-        assertion.disjvars = oldassertion.disjvars;
-        return assertion;
+        result.varsused = oldass.varsused;
+        result.disjvars = oldass.disjvars;
+        return result;
     }
     // Add a sub environment for the node. Return true iff it is added.
-    void addsubenv(Node & node)
+    void addsubenv(const Node & node) const
     {
-        Assertion const & oldass(m_assiter->second);
-        if (oldass.hypcount()==oldass.varcount() || node.pgoal->second.hypsneeded)
+        if (m_assiter->second.hypcount() == m_assiter->second.varcount())
+            return;
+        if (node.pgoal->second.hypsneeded)
             return;
 //std::cout << "Unconditional goal: " << node.pgoal->first;
-        std::string const & label(subenvlabel(node));
-        Assertion const & newass(subenvs.count(label) ? oldass:
-                                 subassertion(node));
-        if (Environ::addsubenv(node, label, newass))
+        if (node.penv0->addsubenv(node, subenvlabel(node)))
             static_cast<Prop *>(node.penv)->clear();
     }
     virtual Eval evalparent(Nodeptr ptr) const
@@ -145,11 +143,9 @@ struct Prop : SearchBase
     {
 //std::cout << "Back propagate to " << *ptr;
 //std::cin.get();
-        Node const & node(ptr->game());
-        if (ptr->eval().first != 1 || node.attempt.type != Move::ASS)
-            return;
         // Record the proof for successful attempt.
-        writeproof(node);
+        if (ptr->eval().first == 1)
+            ptr->game().writeproof();
     }
     virtual ~Prop() {}
 private:
