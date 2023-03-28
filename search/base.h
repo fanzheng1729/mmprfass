@@ -34,11 +34,10 @@ struct SearchBase : Environ, MCTS<Node>
     {
         return data()->game().pgoal->second.proofsteps;
     }
-    // Printing utilities. DO NOTHING if ptr is NULL.
+    // Printing routines. DO NOTHING if ptr is NULL.
     void printmainline(Nodeptr ptr, bool detailed = true) const;
     void printmainline(bool detailed = true) const
     { printmainline(data(), detailed); }
-    void printfulltree(Nodeptr ptr, size_type level = 0) const;
     void printfulltree() const;
     void printstats() const;
     void navigate(bool detailed = true) const;

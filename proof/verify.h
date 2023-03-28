@@ -2,9 +2,7 @@
 #define VERIFY_H_INCLUDED
 
 #include <algorithm>
-#include <cstddef>
-#include <functional>
-#include "step.h"
+#include "printer.h"
 #include "../util/for.h"
 
 // Extract proof steps from a compressed proof.
@@ -111,7 +109,13 @@ typename std::vector<EXP>::size_type findsubstitutions
 }
 
 // Subroutine for proof verification. Verify proof steps.
-Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm = NULL);
+Expression verifyproofsteps(Proofsteps const & steps,
+                            Printer & printer, Assptr pthm = 0);
+inline Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm = 0)
+{
+    Printer printer;
+    return verifyproofsteps(steps, printer, pthm);
+}
 // Verify a regular proof. The "proof" argument should be a non-empty sequence
 // of valid labels. Return the statement the "proof" proves.
 // Return the empty expression if the "proof" is invalid.

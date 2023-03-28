@@ -3,6 +3,7 @@
 #include "../disjvars.h"
 #include "../io.h"
 #include "../msg.h"
+#include "../util/arith.h"
 #include "../util/filter.h"
 #include "verify.h"
 
@@ -141,7 +142,8 @@ static bool enoughsavedsteps
 }
 
 // Subroutine for proof verification. Verify proof steps.
-Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm)
+Expression verifyproofsteps(Proofsteps const & steps,
+                            Printer & printer, Assptr pthm)
 {
     strview thlabel(pthm ? pthm->first : "");
 //std::cout << "Verifying " << thlabel << std::endl;
@@ -183,7 +185,8 @@ Expression verifyproofsteps(Proofsteps const & steps, Assptr pthm)
             printinproofof(thlabel);
             return Expression();
         }
-//std::cout << "Top of stack: " << stack.back();
+        if (!printer.addstep(step, stack.back()))
+            return Expression();
     }
 
     if (stack.size() != 1)

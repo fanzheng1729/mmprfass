@@ -1,8 +1,6 @@
 #ifndef ENVIRON_H_INCLUDED
 #define ENVIRON_H_INCLUDED
 
-#include <cstddef>
-#include <memory>
 #include "../proof/step.h"
 #include "../util/for.h"
 

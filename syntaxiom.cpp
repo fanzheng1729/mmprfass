@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <functional>
 #include "comment.h"
 #include "database.h"
 #include "disjvars.h"

@@ -2,7 +2,6 @@
 #define NODE_H_INCLUDED
 
 #include <algorithm>
-#include <functional>
 #include "environ.h"
 #include "../io.h"
 #include "../util/iter.h"

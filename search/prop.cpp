@@ -216,9 +216,9 @@ Prop::size_type testpropsearch
 printass(*iter);
     Prop tree(iter, database, parameters);
     tree.play(sizelimit);
-//if (iter->first == "imp") tree.navigate();
     // Check answer
-tree.printstats();
+    tree.printstats();
+//if (iter->first == "mpdd") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
@@ -231,13 +231,23 @@ tree.printstats();
         tree.printfulltree();
         return 0;
     }
-    else if (!provesrightthing(iter->first,
-                               verifyproofsteps(tree.proof(), &*iter),
-                               iter->second.expression))
+    else
     {
-        std::cerr << "Prop search test failed\n";
-        std::cerr << tree.proof();
-        tree.navigate();
+        if (!provesrightthing(iter->first,
+                              verifyproofsteps(tree.proof(), &*iter),
+                              iter->second.expression))
+        {
+            std::cerr << "Prop search test failed\n";
+            std::cerr << tree.proof();
+            tree.navigate();
+        }
+        else if (iter->first == "pm4.78")
+        {
+//            Printer printer(&database.typecodes());
+//            verifyproofsteps(tree.proof(), printer, &*iter);
+//            std::cout << printer.str();
+//            std::cin.get();
+        }
     }
 
     return tree.size();
