@@ -2,8 +2,8 @@
 #define BASE_H_INCLUDED
 
 #include "../MCTS/MCTS.h"
-#include "../comment.h"
 #include "node.h"
+#include "../typecode.h"
 #include "../util/filter.h"
 
 // Proof search tree base class, implementing loop detection
@@ -41,7 +41,7 @@ struct SearchBase : Environ, MCTS<Node>
     void printfulltree() const;
     void printstats() const;
     void navigate(bool detailed = true) const;
-    void help() const;
+    static void help();
     virtual ~SearchBase() {}
     Typecodes const & typecodes;
 };

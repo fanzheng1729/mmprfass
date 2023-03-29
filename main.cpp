@@ -31,7 +31,6 @@
 
 #include <cstdlib>
 #include <fstream>
-#include "comment.h"
 #include "database.h"
 #include "io.h"
 #include "read.h"

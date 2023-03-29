@@ -67,6 +67,8 @@ public:
         Hypotheses::iterator result(m_hypotheses.insert(value).first);
         result->second.first = exp;
         result->second.second = floating;
+        if (floating)
+            result->second.first[1].phyp = &*result;
         return result;
     }
     bool hasass(strview label) const { return assertions().count(label); }

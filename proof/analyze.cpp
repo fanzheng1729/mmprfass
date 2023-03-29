@@ -8,6 +8,17 @@
 #include "../util.h"
 #include "verify.h"
 
+// Check if a proof has only 1 step using 1 theorem.
+bool isonestep(Proofsteps const & steps)
+{
+    if (steps.empty())
+        return false;
+    // i = index of the first ASS step.
+    Proofsize i(0);
+    while (steps[i].type != Proofstep::ASS) ++i;
+    return i == steps.size() - 1;
+}
+
 // Subroutine for proof tree building.
 // Process a proof step referencing an assertion (i.e., not a hypothesis).
 // Add the corresponding step to the proof tree.
@@ -34,20 +45,20 @@ static bool treeassertionref
 // Return the proof tree. For the step proof[i],
 // Retval[i] = {index of root of arg1, index of root of arg2, ...}
 // Return empty tree if not okay.
-Prooftree prooftree(Proofsteps const & proofsteps)
+Prooftree prooftree(Proofsteps const & steps)
 {
     std::vector<Proofsize> stack;
     // Preallocate for efficiency
-    stack.reserve(proofsteps.size());
-    Prooftree tree(proofsteps.size());
+    stack.reserve(steps.size());
+    Prooftree tree(steps.size());
 
-    for (Proofsize i(0); i < proofsteps.size(); ++i)
+    for (Proofsize i(0); i < steps.size(); ++i)
     {
-        Proofstep::Type type(proofsteps[i].type);
+        Proofstep::Type type(steps[i].type);
         if (type == Proofstep::HYP)
             stack.push_back(i);
         else if (type == Proofstep::ASS &&
-                 treeassertionref(proofsteps[i].pass->second, stack, tree[i]))
+                 treeassertionref(steps[i].pass->second, stack, tree[i]))
             continue;
         else return Prooftree();
     }

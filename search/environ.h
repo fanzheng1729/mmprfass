@@ -51,7 +51,7 @@ struct Environ
     // If so, record its proof. Return true iff okay.
     bool done(Goals::pointer pgoal, strview typecode) const;
     // # goals of a given status
-    Goals::size_type countgoal(Status status) const
+    Goals::size_type countgoal(int status) const
     {
         Goals::size_type n(0);
         FOR (Goals::const_reference goal, goals)

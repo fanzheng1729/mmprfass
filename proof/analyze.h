@@ -12,10 +12,13 @@ typedef std::pair<Prfiter, Prfiter> Subprf;
 // A sequence of subproofs
 typedef std::vector<Subprf> Subprfs;
 
+// Check if a proof has only 1 step using 1 theorem.
+bool isonestep(Proofsteps const & steps);
+
 // Return the proof tree. For the step proof[i],
 // Retval[i] = {index of hyp1, index of hyp2, ...}
 // Return empty tree if not okay.
-Prooftree prooftree(Proofsteps const & proofsteps);
+Prooftree prooftree(Proofsteps const & steps);
 
 // Split a proof for all nodes found in splitters from the root.
 // Add to subproofs and return the simplified proof.

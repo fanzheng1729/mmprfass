@@ -196,11 +196,12 @@ Moves Prop::ourmovesbysize(Node const & node, Proofsize size) const
     for (Assiters::size_type i
          (1); i < m_assiter->second.number && i < assvec.size(); ++i)
     {
-        Assiter iter(assvec[i]);
+        Assiter const iter(assvec[i]);
         Assertion const & ass(iter->second);
-        if (!(ass.type & Assertion::TRIVIAL) &&
-            ((ass.varcount() > ass.expvarcount()) == (size > 0) ||
-             (!ass.keyhyps.empty() && size == 0)))
+        if (ass.type & (Assertion::TRIVIAL | Assertion::DUPLICATE))
+            continue;
+        if ((ass.varcount() > ass.expvarcount()) == (size > 0) ||
+            (!ass.keyhyps.empty() && size == 0))
             tryassertion(node.goal(), tree, iter, size, moves);
     }
 //std::cout << moves;
@@ -228,26 +229,28 @@ printass(*iter);
     else if (tree.value() != 1)
     {
         std::cerr << "Prop search test failed\n";
-        tree.printfulltree();
+        tree.printmainline(false);
         return 0;
     }
-    else
+    else if (!provesrightthing(iter->first,
+                               verifyproofsteps(tree.proof(), &*iter),
+                               iter->second.expression))
     {
-        if (!provesrightthing(iter->first,
-                              verifyproofsteps(tree.proof(), &*iter),
-                              iter->second.expression))
-        {
-            std::cerr << "Prop search test failed\n";
-            std::cerr << tree.proof();
-            tree.navigate();
-        }
-        else if (iter->first == "pm4.78")
-        {
-//            Printer printer(&database.typecodes());
-//            verifyproofsteps(tree.proof(), printer, &*iter);
-//            std::cout << printer.str();
-//            std::cin.get();
-        }
+        std::cerr << "Prop search test failed\n";
+        std::cerr << tree.proof();
+        tree.navigate();
+    }
+    else if (isonestep(tree.proof()))
+    {
+        const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
+        std::cout << "Duplicate" << std::endl;
+    }
+    else if (iter->first == "pm4.78")
+    {
+//        Printer printer(&database.typecodes());
+//        verifyproofsteps(tree.proof(), printer, &*iter);
+//        std::cout << printer.str();
+//        std::cin.get();
     }
 
     return tree.size();
@@ -279,7 +282,6 @@ bool testpropsearch
         if (n == 0)
         {
             okay = false;
-            nodecount += sizelimit + 1;
             break;
         }
         nodecount += n;
@@ -292,6 +294,6 @@ bool testpropsearch
     std::cout << nodecount << " nodes / " << t << "s = ";
     std::cout << nodecount/t << " nps\n";
     std::cout << solved << '/' << all << " = ";
-    std::cout << 100.*solved/all << "% solved" << std::endl;
+    std::cout << 100.0*solved/all << "% solved" << std::endl;
     return okay;
 }

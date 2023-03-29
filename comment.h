@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include "strview.h"
+#include "typecode.h"
 
 const char mmws[] = "\t\n\f\r "; // metamath whitespace chars ($4.1.1)
 
@@ -38,25 +39,11 @@ struct Commands : std::vector<Command>
     Commands operator[](strview type) const;
 };
 
-// Map: type code -> (as type code, or "" if none, is bound type code) ($4.4.3)
-struct Typecodes : std::map<std::string, std::pair<std::string, bool> >
-{
-    Typecodes(Commands const & syntax = Commands(),
-              Commands const & bound = Commands());
-    // Check if a type code is primitive. Return -1 if not found.
-    int isprimitive(std::string const & typecode) const;
-    // Return the normalized type code. Return "" if not found.
-    strview normalize(strview typecode) const;
-private:
-    void addsyntax(Command const & command);
-    void addbound(Command const & command);
-};
-
 // Map: constructor -> definition, or "" if none ($4.4.3)
 struct Ctordefns : std::map<std::string, std::string>
 {
-    Ctordefns(Commands const & definitions = Commands(),
-              Commands const & primitives = Commands());
+    Ctordefns() {}
+    Ctordefns(Commands const & definitions, Commands const & primitives);
 private:
     void adddefinition(Command const & command);
     void addprimitives(Command const & command);

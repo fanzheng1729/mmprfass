@@ -285,16 +285,14 @@ bool Imp::addfloatinghyp(strview label, strview type, strview var)
         std::cerr << "hypothesis " << phyp->first << std::endl;
         return false;
     }
-    // Add the active hypothesis.
+    // Add the hypothesis.
     Expression exp(2);
-    exp[0] = Symbol3(type);
-    exp[1] = Symbol3(var, m_database.varid(var));
+    exp[0] = type, exp[1] = Symbol3(var, m_database.varid(var));
     Hypiter const iter(m_database.addhyp(label, exp, true));
     m_scopes.back().activehyp.push_back(iter);
-    // Add the floating hypothesis.
     m_scopes.back().floatinghyp[var] = iter;
-    const_cast<Symbol3 &>(m_scopes.back().activehyp.back()->second.first[1]).phyp
-        = &*iter;
+    // Add type code.
+    const_cast<Typecodes &>(m_database.typecodes())[type];
     return true;
 }
 
@@ -304,10 +302,8 @@ bool Imp::reade(strview label)
     Expression const & exp(readexpression('e', label, "$."));
     if (exp.empty())
         return false;
-
     // Create new essential hypothesis
-    m_scopes.back().activehyp.push_back
-        (m_database.addhyp(label, exp, false));
+    m_scopes.back().activehyp.push_back(m_database.addhyp(label, exp, false));
     return true;
 }
 
@@ -317,7 +313,6 @@ bool Imp::reada(strview label)
     Expression const & exp(readexpression('a', label, "$."));
     if (exp.empty())
         return false;
-
     // Add axiom to database
     m_database.addass(label, exp, m_scopes, true);
     return true;

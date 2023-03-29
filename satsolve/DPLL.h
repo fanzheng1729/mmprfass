@@ -12,22 +12,8 @@ inline sLiteral sliteral(Literal lit)
 typedef std::vector<sLiteral> sCNFClause;
 // Instance in conjunctive normal form
 typedef std::vector<sCNFClause> sCNF;
-/*
-// Translation from unsigned to signed clauses and instances
-inline sCNFClause sclause(CNFClause const & clause)
-{
-    sCNFClause result(clause.size());
-    std::transform(clause.begin(), clause.end(), result.begin(), sliteral);
-    return result;
-}
-inline sCNF sclauses(std::vector<CNFClause> const & cnf)
-{
-    sCNF result(cnf.size());
-    std::transform(cnf.begin(), cnf.end(), result.begin(), sclause);
-    return result;
-}
-*/
 
+// The following is from https://github.com/necavit/li-sat-solver
 /**
  * Reads the CNF and initializes
  * any remaining necessary data structures and variables.

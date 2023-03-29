@@ -216,12 +216,13 @@ void SearchBase::printfulltree() const
     std::cout << std::string(50, '-') << std::endl;
 }
 
+// Format: n nodes, x proven, y pending, z false\n
 void SearchBase::printstats() const
 {
     static const char * const s[] = {" proven, ", " pending, ", " false"};
     std::cout << size() << " nodes, ";
     for (int i(1); i >= -1; --i)
-        std::cout << countgoal(static_cast<Environ::Status>(i)) << s[1 - i];
+        std::cout << countgoal(i) << s[1 - i];
     std::cout << std::endl;
 }
 
@@ -291,7 +292,7 @@ void SearchBase::navigate(bool detailed) const
     std::cout << std::string(50, '-') << std::endl;
 }
 
-void SearchBase::help() const
+void SearchBase::help()
 {
     std::cout <<
     "For our turn, c [label] [n] changes to the n-th node using the assertion "

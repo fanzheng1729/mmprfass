@@ -1,11 +1,11 @@
 #include <algorithm>
-#include "comment.h"
 #include "database.h"
 #include "disjvars.h"
 #include "io.h"
 #include "parse.h"
 #include "proof/analyze.h"
 #include "syntaxiom.h"
+#include "typecode.h"
 #include "util.h"
 #include "util/for.h"
 #include "util/iter.h"

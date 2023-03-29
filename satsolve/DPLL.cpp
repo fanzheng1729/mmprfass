@@ -207,10 +207,8 @@ void updateActivityForConflictingClause(const sCNFClause& clause) {
  */
 bool propagateGivesConflict() {
 	while (indexOfNextLiteralToPropagate < modelStack.size()) {
-		//retrieve the literal to "be propagated"
-		sLiteral literalToPropagate = modelStack[indexOfNextLiteralToPropagate];
-		//move forward the "pointer" to the next literal that will be propagated
-		++indexOfNextLiteralToPropagate;
+		//retrieve the literal to be propagated and move forward to the next.
+		sLiteral literalToPropagate = modelStack[indexOfNextLiteralToPropagate++];
 
 		//traverse only positive/negative appearances
 		const vector<sCNFClause* >& clausesToPropagate = literalToPropagate>0 ?
@@ -259,13 +257,11 @@ bool propagateGivesConflict() {
  * Resets the model and model stack to the last decision level.
  */
 void backtrack() {
-	sCNFClause::size_type i = modelStack.size() - 1;
 	sLiteral literal = 0;
-	while (modelStack[i] != DECISION_MARK) { // 0 is the  mark
-		literal = modelStack[i];
+	while (modelStack.back() != DECISION_MARK) { // 0 is the  mark
+		literal = modelStack.back();
 		model[var(literal)] = CNFNONE;
 		modelStack.pop_back();
-		--i;
 	}
 	// at this point, literal is the last decision
 	modelStack.pop_back(); // remove the  mark
@@ -288,17 +284,17 @@ sLiteral getNextDecisionLiteral() {
 	sLiteral mostActiveVariable = 0; // in case no variable is undefined, it will not be modified
 	for (Atom i = 1; i <= numVariables; ++i) {
 		// check only undefined variables
-		if (model[i] == CNFNONE) {
-			// search for the most active literal
-			if (positiveLiteralActivity[i] >= maximumActivity) {
-				maximumActivity = positiveLiteralActivity[i];
-				mostActiveVariable = i;
-			}
-			if (negativeLiteralActivity[i] >= maximumActivity) {
-				maximumActivity = negativeLiteralActivity[i];
-				mostActiveVariable = -i;
-			}
-		}
+		if (model[i] != CNFNONE)
+            continue;
+        // search for the most active literal
+        if (positiveLiteralActivity[i] >= maximumActivity) {
+            maximumActivity = positiveLiteralActivity[i];
+            mostActiveVariable = i;
+        }
+        if (negativeLiteralActivity[i] >= maximumActivity) {
+            maximumActivity = negativeLiteralActivity[i];
+            mostActiveVariable = -i;
+        }
 	}
 	//return the most active variable or, if none is undefined, 0
 	return mostActiveVariable;

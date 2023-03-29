@@ -36,7 +36,8 @@ struct Assertion
     {
         AXIOM = 1,
         TRIVIAL = 2,
-        PROPOSITIONAL = 4
+        DUPLICATE = 4,
+        PROPOSITIONAL = 8
     };
     unsigned type;
 // Functions:

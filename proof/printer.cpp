@@ -1,6 +1,6 @@
 #include "../ass.h"
-#include "../comment.h"
 #include "../io.h"
+#include "../typecode.h"
 #include "../util/arith.h"
 #include "verify.h"
 

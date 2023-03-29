@@ -175,31 +175,12 @@ std::ostream & operator<<(std::ostream & out, Commands commands)
     return out;
 }
 
-Typecodes::Typecodes(Commands const & syntax, Commands const & bound)
+Typecodes::Typecodes(struct Commands const & syntax, Commands const & bound)
 {
     FOR (Command const & command, syntax)
         addsyntax(command);
     FOR (Command const & command, bound)
         addbound(command);
-}
-
-// Check if a type code is primitive. Return -1 if not found.
-int Typecodes::isprimitive(std::string const & typecode) const
-{
-    const_iterator const iter(find(typecode));
-    return iter == end() ? -1 : iter->second.first.empty() ? 1 : 0;
-}
-
-// Return the normalized type code. Return "" if not found.
-strview Typecodes::normalize(strview typecode) const
-{
-    const_iterator iter(find(typecode));
-    if (iter == end()) return "";
-
-    while (!iter->second.first.empty())
-        iter = find(iter->second.first);
-
-    return iter->first;
 }
 
 void Typecodes::addsyntax(Command const & command)
