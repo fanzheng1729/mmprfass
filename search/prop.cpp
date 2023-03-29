@@ -199,7 +199,7 @@ Moves Prop::ourmovesbysize(Node const & node, Proofsize size) const
         Assiter const iter(assvec[i]);
         Assertion const & ass(iter->second);
         if (ass.type & (Assertion::TRIVIAL | Assertion::DUPLICATE))
-            continue;
+            continue; // Skip trivial and duplicate theorems.
         if ((ass.varcount() > ass.expvarcount()) == (size > 0) ||
             (!ass.keyhyps.empty() && size == 0))
             tryassertion(node.goal(), tree, iter, size, moves);
@@ -208,7 +208,7 @@ Moves Prop::ourmovesbysize(Node const & node, Proofsize size) const
     return moves;
 }
 
-// Test proof search for propositional assertions.
+// Test proof search for propositional theorems.
 // Return the size of tree if okay. Otherwise return 0.
 Prop::size_type testpropsearch
     (Assiter iter, Database const & database, Prop::size_type sizelimit,

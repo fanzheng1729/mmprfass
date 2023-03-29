@@ -136,7 +136,6 @@ struct Prop : SearchBase
 
         Moves moves(ourmovesbysize(node, node.defercount()));
         moves.push_back(Move::DEFER);
-
         return moves;
     }
     virtual void backpropcallback(Nodeptr ptr)
@@ -186,9 +185,6 @@ private:
 };
 
 // Test propositional proof search. Return 1 iff okay.
-Prop::size_type testpropsearch
-    (Assiter iter, Database const & database, Prop::size_type sizelimit,
-     double const parameters[3]);
 bool testpropsearch
     (Database const & database, Prop::size_type const sizelimit,
      double const parameters[3]);

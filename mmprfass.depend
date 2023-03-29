@@ -753,7 +753,7 @@
 	"io.h"
 	"strview.h"
 
-1680085328 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1680123307 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -993,7 +993,7 @@
 	"../util/filter.h"
 	"../util/for.h"
 
-1680102109 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\dpll.cpp
+1680103845 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\dpll.cpp
 	<iostream>
 	"DPLL.h"
 
@@ -1240,12 +1240,12 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1680098204 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1680123583 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1680098198 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1680123689 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../database.h"
