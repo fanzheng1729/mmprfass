@@ -112,8 +112,6 @@ struct Prop : SearchBase
     Moves ourmovesbysize(Node const & node, Proofsize size) const;
     virtual Moves ourlegalmoves(Node const & node, std::size_t stage) const
     {
-        if (done(node.pgoal, node.typecode))
-            return Moves();
 //std::cout << "stage " << stage << std::endl;
         if (strategy & STAGED)
             return ourmovesbysize(node, stage);

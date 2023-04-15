@@ -117,7 +117,8 @@ struct Node
     Moves legalmoves(bool isourturn, std::size_t stage) const
     {
         if (isourturn)
-            return penv->ourlegalmoves(*this, stage);
+            return penv->done(pgoal, typecode) ? Moves() :
+                penv->ourlegalmoves(*this, stage);
         // Their turn
         if (stage > 0)
             return Moves();
