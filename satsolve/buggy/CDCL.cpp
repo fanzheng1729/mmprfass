@@ -4,13 +4,13 @@
 #include "../../util/filter.h"
 #include "../../util/for.h"
 
-CNFAssignment CDCL_solver::Decision_list::toassignment(Atom atomcount) const
+CNFModel CDCL_solver::Decision_list::tomodel(Atom atomcount) const
 {
-    CNFAssignment assignment(atomcount);
+    CNFModel model(atomcount);
     FOR (value_type decision, *this)
-        assignment.assign(decision.first / 2);
+        model.assign(decision.first / 2);
 
-    return assignment;
+    return model;
 }
 
 // Return last propagated decision.
@@ -45,7 +45,7 @@ bool CDCL_solver::Decision_list::movetonext(CNFClauses::size_type badindex)
 CNFClauses::size_type CDCL_solver::learn
     (CNFClauses::size_type badindex, Decision_list const & dlist)
 {
-    while (1)
+    while (true)
     {
         // Last propagated decision in the conflicting clause
         Decision_list::const_reverse_iterator const iter
@@ -77,20 +77,18 @@ bool CDCL_solver::sat()
 {
     // # atoms
     Atom atomcount(rcnf.atomcount());
-    if (!is1stle2nd(atomcount, max_atom, varfound, varallowed))
-        return false;
     // List of decisions
     Decision_list dlist;
     dlist.reserve(atomcount);
 
-    while (1)
+    while (true)
     {
         ++count;
-        // Read assignment from decision list.
-        CNFAssignment assignment(dlist.toassignment(atomcount));
+        // Read model from decision list.
+        CNFModel model(dlist.toassignment(atomcount));
         // Unit propagate.
         std::pair<CNFTruthvalue, CNFClauses::size_type> result
-            (extcnf.unitprop(assignment, Unitpropcallback(extcnf, dlist)));
+            (extcnf.unitprop(model, Unitpropcallback(extcnf, dlist)));
         switch (result.first)
         {
         case CNFTRUE:
@@ -100,7 +98,7 @@ bool CDCL_solver::sat()
             // clause is UNDECIDED.
             CNFClause const & clause(extcnf[result.second]);
             // lit = NONE.
-            Literal lit(clause[CNFclausesat(clause, assignment).second]);
+            Literal lit(clause[CNFclausesat(clause, model).second]);
             // Assign lit as a trial decision.
             dlist.push_back(std::make_pair(lit * 2 + 1, 0u));
 //std::cout << "Push  " << dlist.back().first << std::endl;

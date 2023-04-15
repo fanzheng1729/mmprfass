@@ -33,7 +33,6 @@
 #include <fstream>
 #include "database.h"
 #include "io.h"
-#include "read.h"
 #include "search/prop.h"
 #include "stmt.h"
 #include "test.h"
@@ -53,8 +52,7 @@ int main(int argc, char ** argv)
     if (testlog2() || !testfilter(8))
         return EXIT_FAILURE;
 
-    std::cout << "Checking SAT solvers" << std::endl;
-    std::cout << testsat1() << std::endl;
+    std::cout << "Checking SAT solvers: " << testsat1() << std::endl;
     if (testsat2(8) != 0)
         return EXIT_FAILURE;
 
@@ -71,6 +69,7 @@ int main(int argc, char ** argv)
     Comments comments;
     std::cout << "Reading file" << std::endl;
     Timer timer;
+#include "read.h"
     if (!read(argv[1], tokens, comments))
         return EXIT_FAILURE;
     std::cout << "done in " << timer << 's' << std::endl;

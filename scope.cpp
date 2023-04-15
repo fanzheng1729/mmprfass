@@ -114,6 +114,27 @@ Disjvars Scopes::disjvars(Symbol2s const & varsused) const
     return result;
 }
 
+// Return the key hypotheses of an assertion.
+static std::vector<Hypsize> keyhyps(Varsused const & varsused)
+{
+    // result[i] = true iff hypothesis i has all the free variables
+    std::vector<Hypsize> result(varsused.begin()->second.size() - 1, true);
+    FOR (Varsused::const_reference vardata, varsused)
+    {
+        if (vardata.second.back())
+            continue; // Skip variables in the expression.
+        std::transform(result.begin(), result.end(), vardata.second.begin(),
+                       result.begin(), std::logical_and<bool>());
+    }
+    // result = list of key hypotheses
+    std::vector<Hypsize>::iterator out(result.begin());
+    for (Hypsize in(0); in < result.size(); ++in)
+        if (result[in])
+            *out++ = in;
+    result.erase(out, result.end());
+    return result;
+}
+
 // Complete an Assertion from its Expression. That is, determine the
 // mandatory hypotheses and disjoint variable restrictions and the #.
 void Scopes::completeass(struct Assertion & ass) const
@@ -136,53 +157,43 @@ void Scopes::completeass(struct Assertion & ass) const
         for (Hypiters::const_reverse_iterator iter2
             (hypvec.rbegin()); iter2 != hypvec.rend(); ++iter2)
         {
-            Hypiter const iterhyp(*iter2);
-//std::cout << "Checking hypothesis " << iterhyp->first << std::endl;
-            Hypothesis const & hyp(iterhyp->second);
+            Hypiter const hypiter(*iter2);
+//std::cout << "Checking hypothesis " << hypiter->first << std::endl;
+            Hypothesis const & hyp(hypiter->second);
             Expression const & hypexp(hyp.first);
             if (hyp.second && varsused.count(hypexp[1]) > 0)
             {
 //std::cout << "Mandatory floating Hypothesis: " << hypexp;
-                ass.hypiters.push_back(iterhyp);
-                Varsused::value_type value(hypexp[1], Bvector(1, false));
-                ass.varsused.insert(value);
-//std::cout << hypexp[1] << " 0\t";
+                ass.hypiters.push_back(hypiter);
             }
             else if (!hyp.second)
             {
 //std::cout << "Essential hypothesis: " << hypexp;
-                ass.hypiters.push_back(iterhyp);
+                ass.hypiters.push_back(hypiter);
                 // Add variables used in hypotheses
                 FOR (Symbol3 var, hypexp)
                     if (var)
                     {
-                        varsused.insert(var);
-//std::cout << var << " ";
+                        ass.nfreevar += varsused.insert(var).second;
+                        Bvector & usage(ass.varsused[var]);
+                        usage.resize(ass.hypcount() + 1);
+                        usage.back() = true;
+//std::cout << " " << var;
                     }
             }
         }
     }
-
+    // Reverse order of hypotheses.
     std::reverse(ass.hypiters.begin(), ass.hypiters.end());
-
+    // Reverse variable appearance vectors.
+    FOR (Varsused::reference vardata, ass.varsused)
+    {
+        vardata.second.resize(ass.hypcount() + 1);
+        std::reverse(vardata.second.begin(), vardata.second.end());
+    }
+    // Find disjoint variable hypotheses.
     ass.disjvars = disjvars(varsused);
     // Find key hypotheses.
-    if (ass.varcount() == ass.expvarcount())
-        return;
-    for (Hypsize i(0); i < ass.hypcount(); ++i)
-    {
-        Hypiter const iter(ass.hypiters[i]);
-        if (iter->second.second)
-            continue; // Skip floating hypotheses.
-        // Expression of the hypothesis
-        Expression const & hypexp(iter->second.first);
-        // Check if the hypothesis is key hypothesis.
-        bool iskey(true);
-        FOR (Varsused::const_reference var, ass.varsused)
-            if (!var.second.back() && !util::filter(hypexp)(var.first))
-                iskey = false;
-        // If it is, note it.
-        if (iskey)
-            ass.keyhyps.push_back(i);
-    }
+    if (ass.nfreevar > 0)
+        ass.keyhyps = keyhyps(ass.varsused);
 }

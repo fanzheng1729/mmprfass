@@ -32,7 +32,7 @@ struct Move
         type(ASS), pass(ptr), substitutions(subst) {}
     // A move verifying a hypothesis, on their turn
     Move(Hypsize i) : index(i), pass(NULL) {}
-    // Expression the attempt of using an assertion proves
+    // Expression the attempt of using an assertion proves (must be of type ASS)
     Proofsteps exprPolish() const
     {
         Proofsteps result;
@@ -61,7 +61,6 @@ struct Move
         for ( ; i < hypcount(); ++i)
             if (hyprPolish(i) == proofsteps && hyptypecode(i) == typecode)
                 return i;
-
         return i;
     }
     // # of hypotheses the attempt (must be of type ASS) needs

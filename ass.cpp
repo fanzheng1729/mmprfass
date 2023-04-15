@@ -2,29 +2,34 @@
 #include "util/filter.h"
 #include "util/for.h"
 
-// Return index the hypothesis matching the expression.
-// If there is no match, return # hypotheses.
-Hypsize Assertion::matchhyp(Expression const & exp) const
+// Remove unnecessary variables.
+Bvector & Assertion::trimvars(Bvector & extrahyps, Proofsteps const & steps) const
 {
-    Hypsize i(0);
-    for ( ; i < hypcount(); ++i)
-        if (hypiters[i]->second.first == exp)
-            return i;
-
-    return i;
-}
-Hypsize Assertion::matchhyp(Proofsteps const & rPolish, strview typecode) const
-{
-    Hypsize i(0);
-    for ( ; i < hypcount(); ++i)
+    if (extrahyps.empty())
+        return extrahyps;
+//std::cout << steps;
+    extrahyps.resize(hypcount());
+    extrahyps.flip();
+    for (Hypsize i(0); i < hypcount(); ++i)
     {
         Hypothesis const & hyp(hypiters[i]->second);
-        if (!hyp.first.empty() && hyp.first[0] == typecode &&
-            hypsrPolish[i] == rPolish)
-            return i;
+        if (!hyp.second)
+            continue; // Skip essential hypotheses.
+        // Appearance of the variable in hypotheses
+        Bvector const & usage(varsused.at(hyp.first[1]));
+//std::cout << "use of " << hyp.first[1] << ' ';
+        Hypsize j(hypcount() - 1);
+        for ( ; j != Hypsize(-1); --j)
+            if (extrahyps[j] && usage[j]) break;
+//std::cout << j << ' ';
+        if ((extrahyps[i] = j != Hypsize(-1)))
+            continue; // Variable appears in some necessary essential hypothesis
+        // Check if the variable appears in steps.
+        extrahyps[i] = util::filter(steps)(hypiters[i]->first.c_str);
     }
-
-    return i;
+    extrahyps.flip();
+//std::cout << extrahyps;
+    return extrahyps;
 }
 
 // If rPolish of the expression matches a given pattern,
@@ -75,7 +80,35 @@ const char * Assertion::match(const int pattern[]) const
     return exprPolish.back();
 }
 
-//#include <iostream>
+// Set the hypotheses, throwing away extra ones.
+void Assertion::sethyps(Assertion const & ass, Bvector const & extrahyps)
+{
+    if (extrahyps.empty())
+        return;
+    hypiters.clear(), hypsrPolish.clear(), hypstree.clear();
+    varsused.clear();
+    for (Hypsize i(0); i < ass.hypcount(); ++i)
+    {
+        if (i < extrahyps.size() && extrahyps[i])
+            continue;
+        // *iter is used.
+        Hypiter const iter(ass.hypiters[i]);
+        hypiters.push_back(iter);
+        if (iter->second.second)
+        {
+            // Floating hypothesis of used variable
+            Symbol3 const var(iter->second.first[1]);
+            Bvector & usage(varsused[var]);
+            Bvector const & assusage(ass.varsused.at(var));
+            for (Hypsize j(0); j < ass.hypcount(); ++j)
+                if (!extrahyps[j])
+                    usage.push_back(assusage[j]);
+        }
+        hypsrPolish.push_back(ass.hypsrPolish[i]);
+        hypstree.push_back(ass.hypstree[i]);
+    }
+}
+
 // Find the equivalence relations and their justifications among syntax axioms.
 Equalities equalities(Assertions const & assertions)
 {

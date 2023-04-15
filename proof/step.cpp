@@ -33,9 +33,9 @@ Proofstep::operator const char*() const
 // label -> proof step, using hypotheses and assertions.
 Proofstep Proofstep::Builder::operator()(strview label) const
 {
-    Hypiter const iterhyp(m_hyps.find(label));
-    if (iterhyp != m_hyps.end())
-        return Proofstep(iterhyp); // hypothesis
+    Hypiter const hypiter(m_hyps.find(label));
+    if (hypiter != m_hyps.end())
+        return Proofstep(hypiter); // hypothesis
 
     Assiter const iterass(m_assertions.find(label));
     if (iterass != m_assertions.end())
@@ -52,7 +52,6 @@ void writeproof(Proofsteps & dest, Assptr pass, pProofs const & hyps)
     Proofsize length(1);
     FOR (Proofsteps const * p, hyps)
         length += p->size();
-
     // Hypotheses
     dest.clear();
     dest.reserve(length); // Preallocate for efficiency

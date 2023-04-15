@@ -8,10 +8,21 @@
 
 std::ostream & operator<<(std::ostream & out, Disjvars const & disjvars)
 {
-    FOR (Disjvars::const_reference r, disjvars)
-        out << r.first.c_str << ' ' << r.second.c_str << '\n';
+    FOR (Disjvars::value_type vars, disjvars)
+        out << vars.first.c_str << ' ' << vars.second.c_str << '\n';
 
     return out;
+}
+
+// Restrict disjoint variables hypotheses to a set of variables.
+Disjvars operator &(Disjvars const & disjvars, Varsused const & varsused)
+{
+    Disjvars result;
+    FOR (Disjvars::value_type vars, disjvars)
+        if (varsused.count(vars.first) && varsused.count(vars.second))
+            result.insert(vars);
+
+    return result;
 }
 
 // Check if two variables satisfy the disjoint variable hypothesis.

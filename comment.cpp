@@ -1,6 +1,6 @@
 #include <algorithm>
-#include <cstring>
 #include <fstream>
+#include <numeric>
 #include <sstream>
 #include <utility>
 #include "comment.h"
@@ -98,20 +98,20 @@ std::string comment(std::ifstream & in)
 }
 
 // Read commands from comments ($4.4.2 and 4.4.3). C-comment unsupported.
-void Commands::addcmd(std::string str)
+static Commands * addcmd(Commands * p, std::string str)
 {
     char * token(std::strtok(&str[0], mmws));
     if (!token || std::strlen(token) != 2 || token[0] != '$')
-        return;
+        return p;
     // metamath comment types ($4.4.2 and $4.4.3)
     if (std::strchr("jt", token[1]) == NULL)
-        return;
+        return p;
     // Move to next token.
     char * tokenend(token + std::strlen(token));
     if (tokenend < str.data() + str.size())
         ++tokenend;
 
-    resize(size() + 1);
+    p->resize(p->size() + 1);
     while ((token = std::strtok(tokenend, mmws)))
     {
         // end of token.
@@ -121,10 +121,10 @@ void Commands::addcmd(std::string str)
         while (s)
         {
             // Add token.
-            back().push_back(s);
+            p->back().push_back(s);
             // Check if there is a semicolon.
             if (s + std::strlen(s) < tokenend)
-                resize(size() + 1);
+                p->resize(p->size() + 1);
             // Find new token.
             s = std::strtok(NULL, ";");
         }
@@ -133,14 +133,13 @@ void Commands::addcmd(std::string str)
             ++tokenend;
     }
     // Remove possible empty command.
-    if (back().empty()) pop_back();
-    return;
+    if (p->back().empty()) p->pop_back();
+    return p;
 }
 
 Commands::Commands(std::vector<strview> const & comments)
 {
-    FOR (strview comment, comments)
-        addcmd(comment);
+    std::accumulate(comments.begin(), comments.end(), this, addcmd);
 }
 
 // Classify comments ($4.4.3).
@@ -161,10 +160,8 @@ Commands Commands::operator[](strview type) const
 // Return the unquoted word. Return "" if it is not quoted.
 static std::string unquote(std::string const & str)
 {
-    if (str.size() < 3 || str[0] != '\'' || str[str.size() - 1] != '\'')
-        return "";
-
-    return str.substr(1, str.size() - 2);
+    return (str.size() < 3 || str[0] != '\'' || str.back() != '\'') ? "" :
+        str.substr(1, str.size() - 2);
 }
 
 std::ostream & operator<<(std::ostream & out, Commands commands)
@@ -175,96 +172,97 @@ std::ostream & operator<<(std::ostream & out, Commands commands)
     return out;
 }
 
-Typecodes::Typecodes(struct Commands const & syntax, Commands const & bound)
-{
-    FOR (Command const & command, syntax)
-        addsyntax(command);
-    FOR (Command const & command, bound)
-        addbound(command);
-}
-
-void Typecodes::addsyntax(Command const & command)
+static Typecodes * addsyntax(Typecodes * p, Command const & command)
 {
     if (unexpected(command.size() != 1 &&
                    !(command.size() == 3 && command[1] == "as"),
                    "syntax command", command))
-        return;
+        return p;
     // Get the type.
-    std::string const & type(unquote(command.front()));
-    if (unexpected(type.empty(), "type code", command.front()))
-        return;
+    std::string const & type(unquote(command[0]));
+    if (unexpected(type.empty(), "type code", command[0]))
+        return p;
     // Add the type.
-    std::pair<iterator, bool> result(insert(value_type(type, mapped_type())));
+    std::pair<Typecodes::iterator, bool> result
+        (p->insert(Typecodes::value_type(type, Typecodes::mapped_type())));
     if (result.second == false)
     {
         std::cerr << "Type code " << type << " already exists\n";
-        return;
+        return p;
     }
     // No as type.
     if (command.size() == 1)
-        return;
+        return p;
     // Add the as type.
     std::string const & astype(unquote(command.back()));
     if (unexpected(astype.empty(), "type code", command.back()))
-        return;
-    if (count(astype) == 0)
+        return p;
+    if (p->count(astype) == 0)
     {
         std::cerr << "Type code " << astype << " does not exist\n";
-        return;
+        return p;
     }
     result.first->second.first = astype;
+    return p;
 }
 
-void Typecodes::addbound(Command const & command)
+static Typecodes * addbound(Typecodes * p, Command const & command)
 {
     if (unexpected(command.size() != 1, "bound syntax command", command))
-        return;
-
-    iterator const iter(find(unquote(command[0])));
-    if (unexpected(iter == end(), "type code", command[0]))
-        return;
-
+        return p;
+    // Get the type.
+    Typecodes::iterator const iter(p->find(unquote(command[0])));
+    if (unexpected(iter == p->end(), "type code", command[0]))
+        return p;
+    // Add it as a bound type.
     iter->second.second = true;
+    return p;
 }
 
-Ctordefns::Ctordefns(Commands const & definitions, Commands const & primitives)
+Typecodes::Typecodes(struct Commands const & syntax, Commands const & bound)
 {
-    FOR (Command const & command, definitions)
-        adddefinition(command);
-    FOR (Command const & command, primitives)
-        addprimitives(command);
+    std::accumulate(syntax.begin(), syntax.end(), this, addsyntax);
+    std::accumulate(bound.begin(), bound.end(), this, addbound);
 }
 
-void Ctordefns::adddefinition(Command const & command)
+static Ctordefns * adddefinition(Ctordefns * p, Command const & command)
 {
     if (unexpected(command.size() != 3
                    || command[1] != "for", "command", command))
-        return;
+        return p;
     // Get the constructor.
     std::string const & ctor(unquote(command.back()));
     if (unexpected(ctor.empty(), "constructor", command.back()))
-        return;
+        return p;
     // Get its definition.
     std::string const & defn(unquote(command.front()));
     if (unexpected(defn.empty(), "definition", command.front()))
-        return;
+        return p;
     // Add the constructor.
-    if (insert(value_type(ctor, defn)).second == false)
+    if (p->insert(Ctordefns::value_type(ctor, defn)).second == false)
         std::cerr << "Constructor " << ctor << " already exists\n";
+    return p;
 }
 
-void Ctordefns::addprimitives(Command const & command)
+static Ctordefns * addprimitives(Ctordefns * p, Command const & command)
 {
     FOR (std::string const & token, command)
     {
         // Get the constructor.
         std::string const & ctor(unquote(token));
         if (unexpected(ctor.empty(), "constructor", token))
-            return;
+            return p;
         // Add the constructor.
-        if (insert(value_type(ctor, "")).second == false)
+        if (p->insert(Ctordefns::value_type(ctor, "")).second == false)
             std::cerr << "Constructor " << ctor << " already exists\n";
     }
+    return p;
+}
+
+Ctordefns::Ctordefns(Commands const & definitions, Commands const & primitives)
+{
+    std::accumulate(definitions.begin(), definitions.end(), this, adddefinition);
+    std::accumulate(primitives.begin(), primitives.end(), this, addprimitives);
 }
 
 Commentinfo::Commentinfo(Comments const & comments)

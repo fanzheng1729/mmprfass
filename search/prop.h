@@ -4,6 +4,7 @@
 #include "base.h"
 #include "../cnf.h"
 #include "../database.h"
+#include "../disjvars.h"
 #include "gen.h"
 
 // Propositional proof search, using SAT pruning
@@ -14,13 +15,9 @@ struct Prop : SearchBase
         SearchBase(iter, database.typecodes(), parameters),
         strategy(parameters[2]),
         m_database(database),
-        varsused(iter->second.varsused),
-        hypcnf(database.propctors().hypcnf(iter->second, hypatomcount)),
-        hypslen(iter->second.hypslen())
+        hypscnf(database.propctors().hypscnf(iter->second, hypatomcount))
     {
         Assertion const & ass(iter->second);
-        // Assume that all hypotheses are necessary for the root goal.
-        data()->game().pgoal->second.hypsneeded = ass.hypcount() > ass.varcount();
         // Relevant syntax axioms
         FOR (Syntaxioms::const_reference syntaxiom, m_database.syntaxioms())
             if (syntaxiom.second < ass)
@@ -32,11 +29,11 @@ struct Prop : SearchBase
     // Check if a goal is valid.
     bool valid(Proofsteps const & goal) const
     {
-        CNFClauses cnf(hypcnf);
+        CNFClauses cnf(hypscnf);
         Atom natom(hypatomcount);
         if (!m_database.propctors().addcnffromrPolish
             (goal, m_assiter->second.hypiters, cnf, natom))
-            return false;
+            throw 1;
         cnf.closeoff(true);
         return !cnf.sat();
     }
@@ -45,24 +42,32 @@ struct Prop : SearchBase
     {
         CNFClauses cnf;
         Atom natom(hypatomcount);
-        m_database.propctors().addcnffromrPolish
-            (goal, m_assiter->second.hypiters, cnf, natom);
+        Assertion const & ass(m_assiter->second);
+        m_database.propctors().addcnffromrPolish(goal, ass.hypiters, cnf, natom);
         cnf.closeoff(true);
-        return cnf.sat(); // counter-satisfiable = needs hypotheses.
+        // counter-satisfiable = needs hypotheses
+        return cnf.sat() && ass.esshypcount();
+    }
+    // Return the extra hypotheses of a goal.
+    Bvector extrahyps(Goals::pointer pgoal) const
+    {
+        Assertion const & ass(m_assiter->second);
+        return ass.esshypcount() == 0 || hypsneeded(pgoal->first) ? Bvector() :
+            ass.trimvars(Bvector(ass.hypcount(), true), pgoal->first);
     }
     // Evaluate leaf nodes, and record the proof if proven.
     virtual Eval evaltheirleaf(Node const & node) const;
+    // Check if all hypotheses of a move are valid.
+    bool valid(Move const & move) const;
     virtual Eval evalourleaf(Node const & node) const
     {
-        if (done(node.pgoal, node.typecode))
-            return Eval(1, true);
 //std::cout << "Evaluating " << node;
-        addsubenv(node);
-        Proofsize const newhypslen(static_cast<Prop *>(node.penv)->hypslen);
-        return eval(newhypslen + node.pgoal->first.size() + node.defercount());
+        if (!node.pgoal->second.extrahyps.empty() && node.penv0->addsubenv(node))
+            static_cast<SearchBase *>(node.penv)->clear();
+        return eval(node.penv->hypslen
+                    + node.pgoal->first.size()
+                    + node.defercount());
     }
-    // Returns the label of a sub environment from a node.
-    std::string subenvlabel(Node const &) const { return ""; }
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address.
     virtual Prop * makeenv(Assiter iter) const
@@ -72,35 +77,16 @@ struct Prop : SearchBase
         return new Prop(iter, m_database, param);
     }
     // Return the simplified assertion for the goal of the node to hold.
-    virtual Assertion assertion(Node const &) const
+    virtual Assertion assertion(Node const & node) const
     {
-        Assertion result;
         Assertion const & oldass(m_assiter->second);
+        Bvector const & extrahyps(node.pgoal->second.extrahyps);
+        Assertion result;
         result.number = oldass.number;
+        result.sethyps(oldass, extrahyps);
         result.expression.resize(1);
-        for (Hypsize i(0); i < oldass.hypcount(); ++i)
-        {
-            Hypiter iter(oldass.hypiters[i]);
-            if (!iter->second.second)
-                continue; // Skip essential hypotheses.
-            result.hypiters.push_back(iter);
-            result.hypsrPolish.push_back(oldass.hypsrPolish[i]);
-            result.hypstree.push_back(oldass.hypstree[i]);
-        }
-        result.varsused = oldass.varsused;
-        result.disjvars = oldass.disjvars;
+        result.disjvars = oldass.disjvars & result.varsused;
         return result;
-    }
-    // Add a sub environment for the node. Return true iff it is added.
-    void addsubenv(const Node & node) const
-    {
-        if (m_assiter->second.hypcount() == m_assiter->second.varcount())
-            return;
-        if (node.pgoal->second.hypsneeded)
-            return;
-//std::cout << "Unconditional goal: " << node.pgoal->first;
-        if (node.penv0->addsubenv(node, subenvlabel(node)))
-            static_cast<Prop *>(node.penv)->clear();
     }
     virtual Eval evalparent(Nodeptr ptr) const
     {
@@ -122,8 +108,6 @@ struct Prop : SearchBase
         double const value(score(steps.size() + ptr->stage()));
         return value + UCBbonus(1, ptr.size(), 1);
     }
-    // Check if all hypotheses of a move are valid.
-    bool valid(Move const & move) const;
     // Moves with a given size
     Moves ourmovesbysize(Node const & node, Proofsize size) const;
     virtual Moves ourlegalmoves(Node const & node, std::size_t stage) const
@@ -174,14 +158,12 @@ private:
          Moves & moves) const;
     unsigned const strategy;
     Database const & m_database;
-    Varsused varsused;
     Syntaxioms syntaxioms;
     Genresult  mutable genresult;
     Termcounts mutable termcounts;
-    CNFClauses const hypcnf;
+    // The CNF of all hypotheses combined
+    CNFClauses const hypscnf;
     Atom hypatomcount;
-    // length of the rev Polish notation of all hypotheses combined
-    Proofsize  const hypslen;
 };
 
 // Test propositional proof search. Return 1 iff okay.

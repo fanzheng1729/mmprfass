@@ -19,16 +19,16 @@ typedef std::vector<Literal> CNFClause;
 
 // Satisfaction of a clause
 enum CNFClausesat{UNDECIDED = -2, UNIT = -1, CONTRADICTORY = 0, SATISFIED = 1};
-// Assignment for an individual atom
+// Sense of an individual atom
 enum CNFTruthvalue{CNFNONE = -1, CNFFALSE = 0, CNFTRUE = 1};
-// Assignment for an instance
-struct CNFAssignment : public std::vector<int>
+// Model of an instance
+struct CNFModel : public std::vector<int>
 {
-    CNFAssignment(size_type const n) : std::vector<int>(n, CNFNONE) {}
+    CNFModel(size_type const n) : std::vector<int>(n, CNFNONE) {}
     // sense = 0, literal is positive, assign true;
     // sense = 1, literal is negative, assign false.
     void assign(Literal const lit) { (*this)[lit / 2] = int(1 - lit % 2); }
-    // Return the assignment of a literal.
+    // Return the sense of a literal.
     int test(Literal const lit) const
     {
         return (*this)[lit / 2] == CNFNONE ? static_cast<int>(CNFNONE) :
@@ -36,11 +36,11 @@ struct CNFAssignment : public std::vector<int>
     }
 };
 
-// Check the satisfaction of clause under assignment.
+// Check the satisfaction of clause under the model.
 // If UNIT, return (UNIT, index of unassigned literal).
 // If UNDECIDED, return (UNDECIDED, index of unassigned literal).
 std::pair<CNFClausesat, CNFClause::size_type> CNFclausesat
-        (CNFClause const & clause, CNFAssignment const & assignment);
+        (CNFClause const & clause, CNFModel const & model);
 
 // Instance in conjunctive normal form
 struct CNFClauses : public std::vector<CNFClause>
@@ -71,14 +71,12 @@ struct CNFClauses : public std::vector<CNFClause>
          Literal const * const arglist, Atom const argcount);
 // Add a clause containing the next atom alone (or its negation if negate = 1).
     void closeoff(bool negate = false)
-    {
-        push_back(CNFClause(1, (atomcount() - 1) * 2 + negate));
-    }
-// Return if there is no contradiction in the assignment so far.
-    bool okaysofar(CNFAssignment const & assignment) const
+    { push_back(CNFClause(1, (atomcount() - 1) * 2 + negate)); }
+// Return if there is no contradiction in the model so far.
+    bool okaysofar(CNFModel const & model) const
     {
         FOR (const_reference clause, *this)
-            if (CNFclausesat(clause, assignment).first == CONTRADICTORY)
+            if (CNFclausesat(clause, model).first == CONTRADICTORY)
                 return false;
 
         return true;
@@ -86,18 +84,18 @@ struct CNFClauses : public std::vector<CNFClause>
 // Move clause to the next UNIT, CONTRADICTORY or UNDECIDED clause.
 // Return (Clausesat, index of unassigned literal).
     std::pair<CNFClausesat, CNFClause::size_type> nextclause
-        (size_type & clause, CNFAssignment const & assignment) const;
+        (size_type & clause, CNFModel const & model) const;
 // Propagate unit clauses iteratively.
 // Return (TRUE, 0), (FALSE, CONTRADICTORY clause) or (NONE, UNDECIDED clause).
     template<class T> std::pair<CNFTruthvalue, CNFClauses::size_type>
-        unitprop(CNFAssignment & assignment, T callback) const;
+        unitprop(CNFModel & model, T callback) const;
 // Propagate unit clauses iteratively.
 // Return (TRUE, 0), (FALSE, CONTRADICTORY clause) or (NONE, UNDECIDED clause).
     std::pair<CNFTruthvalue, CNFClauses::size_type>
-        unitprop(CNFAssignment & assignment) const
+        unitprop(CNFModel & model) const
     {
         void (*p)(size_type, CNFClause::size_type) = 0;
-        return unitprop(assignment, p);
+        return unitprop(model, p);
     }
     struct Unitpropcallback { operator bool() const {return true;} };
 // Return if the clauses are satisfiable.
@@ -108,7 +106,7 @@ struct CNFClauses : public std::vector<CNFClause>
 };
 
 template<class T> std::pair<CNFTruthvalue, CNFClauses::size_type>
-    CNFClauses::unitprop(CNFAssignment & assignment, T callback) const
+    CNFClauses::unitprop(CNFModel & model, T callback) const
 {
     if (empty())
         return std::make_pair(CNFTRUE, 0u);
@@ -117,7 +115,7 @@ template<class T> std::pair<CNFTruthvalue, CNFClauses::size_type>
     while (true)
     {
         std::pair<CNFClausesat, CNFClause::size_type> const result
-            (nextclause(clause, assignment));
+            (nextclause(clause, model));
 
         switch (result.first)
         {
@@ -132,7 +130,7 @@ template<class T> std::pair<CNFTruthvalue, CNFClauses::size_type>
         // Found a unit clause. Assign a new literal.
         if (callback)
             callback(clause, result.second);
-        assignment.assign((*this)[clause][result.second]);
+        model.assign((*this)[clause][result.second]);
         // Move to next clause.
         ++clause %= size();
     }

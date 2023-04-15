@@ -15,7 +15,8 @@ bool isonestep(Proofsteps const & steps)
         return false;
     // i = index of the first ASS step.
     Proofsize i(0);
-    while (steps[i].type != Proofstep::ASS) ++i;
+    while (i < steps.size() && steps[i].type != Proofstep::ASS)
+        ++i;
     return i == steps.size() - 1;
 }
 
@@ -268,6 +269,9 @@ bool findsubstitutions
      Proofsteps const & pattern, Prooftree const & patterntree,
      Subprfsteps & result)
 {
+    if (exp.empty() || exp.size() != exptree.size() ||
+        pattern.empty() || pattern.size() != patterntree.size())
+        return false;
     return findsubstitutions(exp.begin(), exp.end(), exptree.begin(),
                              pattern.begin(), pattern.end(), patterntree.begin(),
                              result);

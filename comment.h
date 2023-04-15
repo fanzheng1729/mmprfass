@@ -19,7 +19,6 @@ struct Comment
 
 struct Comments : std::vector<Comment>
 {
-    using vector::operator[];
 // Classify comments ($4.4.2 and 4.4.3).
     std::vector<strview> operator[](strview type) const;
 };
@@ -31,10 +30,7 @@ typedef std::vector<std::string> Command;
 
 struct Commands : std::vector<Command>
 {
-// Read commands from comments ($4.4.2 and 4.4.3). C-comment unsupported.
-    void addcmd(std::string str);
     Commands(std::vector<strview> const & comments = std::vector<strview>());
-    using vector::operator[];
 // Classify comments ($4.4.3).
     Commands operator[](strview type) const;
 };
@@ -44,9 +40,6 @@ struct Ctordefns : std::map<std::string, std::string>
 {
     Ctordefns() {}
     Ctordefns(Commands const & definitions, Commands const & primitives);
-private:
-    void adddefinition(Command const & command);
-    void addprimitives(Command const & command);
 };
 
 struct Commentinfo

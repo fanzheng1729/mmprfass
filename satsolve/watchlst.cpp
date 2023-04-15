@@ -21,7 +21,7 @@ Watchlist_solver::Watchlist::Watchlist(CNFClauses const & cnf)
 // Return false if it is impossible to do zo, meaning a clause is contradicted.
 bool Watchlist_solver::Watchlist::update
     (CNFClauses const & cnf, Literal falseliteral,
-     CNFAssignment const & assignment)
+     CNFModel const & model)
 {
     if (unexpected(falseliteral >= size(), "literal", falseliteral))
         return false;
@@ -42,9 +42,9 @@ bool Watchlist_solver::Watchlist::update
         {
             Literal alter(clause[i]);
             // atom = alter / 2, sense = alter % 2
-            // sense = 0, literal is positive, assignment != false
-            // sense = 1, literal is negative, assignment != true
-            if (assignment[alter / 2] != static_cast<CNFTruthvalue>(alter % 2))
+            // sense = 0, literal is positive, model != false
+            // sense = 1, literal is negative, model != true
+            if (model[alter / 2] != static_cast<CNFTruthvalue>(alter % 2))
             {
                 // Found another literal alter to watch.
                 foundalternative = true;

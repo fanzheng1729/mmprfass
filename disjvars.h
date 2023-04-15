@@ -6,6 +6,9 @@
 
 std::ostream & operator<<(std::ostream & out, Disjvars const & disjvars);
 
+// Restrict disjoint variables hypotheses to a set of variables.
+Disjvars operator &(Disjvars const & disjvars, Varsused const & varsused);
+
 // Check if non-dummy variables in two expressions are disjoint.
 bool checkdisjvars
     (const Symbol3 * begin1, const Symbol3 * end1,

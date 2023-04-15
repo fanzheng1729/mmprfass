@@ -16,7 +16,7 @@ private:
     static bool istrial(Decision d) { return d.first & 1; }
     struct Decision_list : std::vector<Decision>
     {
-        CNFAssignment toassignment(Atom atomcount) const;
+        CNFModel tomodel(Atom atomcount) const;
 // Return last propagated decision.
         CDCL_solver::Decision_list::const_reverse_iterator lastunitprop
             (CNFClause const & clause) const;

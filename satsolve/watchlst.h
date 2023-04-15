@@ -26,9 +26,9 @@ private:
     // by making any clause watching it watch something else.
     // Return false if it is impossible to do zo, meaning a clause is contradicted.
         bool update(CNFClauses const & cnf, Literal falseliteral,
-                    CNFAssignment const & assignment);
+                    CNFModel const & assignment);
         bool operator()
-            (CNFClauses const & cnf, CNFAssignment const & assignment,
+            (CNFClauses const & cnf, CNFModel const & assignment,
              Atom atom)
         {
             return update(cnf, atom * 2 + assignment[atom], assignment);

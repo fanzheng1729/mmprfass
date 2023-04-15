@@ -1,10 +1,7 @@
 #ifndef ASS_H_INCLUDED
 #define ASS_H_INCLUDED
 
-#include <algorithm>
 #include "proof/analyze.h"
-#include "util.h"
-#include "util/for.h"
 
 // An axiom or a theorem.
 struct Assertion
@@ -19,9 +16,11 @@ struct Assertion
     Assertions::size_type number;
     operator Assertions::size_type() const { return number; }
 // Derived properties:
-    // Map: variable used in statement -> is used in the expression
+    // # free variables
+    Hypsize nfreevar;
+    // Map: variable used in statement -> (is used in hyp i, is used in exp)
     Varsused varsused;
-    // #s key hypotheses: essential ones containing all free variables
+    // Index of key hypotheses: essential ones containing all free variables
     std::vector<Hypsize> keyhyps;
     // revPolish notation of hypotheses.
     std::vector<Proofsteps> hypsrPolish;
@@ -45,31 +44,61 @@ struct Assertion
     Hypsize hypcount() const {return hypiters.size();}
     // Return index the hypothesis matching the expression.
     // If there is no match, return # hypotheses.
-    Hypsize matchhyp(Expression const & exp) const;
-    Hypsize matchhyp(Proofsteps const & rPolish, strview type) const;
+    Hypsize matchhyp(Expression const & exp) const
+    {
+        Hypsize i(0);
+        for ( ; i < hypcount(); ++i)
+            if (hypiters[i]->second.first == exp)
+                return i;
+        return i;
+    }
+    Hypsize matchhyp(Proofsteps const & rPolish, strview typecode) const
+    {
+        Hypsize i(0);
+        for ( ; i < hypcount(); ++i)
+        {
+            Hypothesis const & hyp(hypiters[i]->second);
+            if (!hyp.first.empty() && hyp.first[0] == typecode &&
+                hypsrPolish[i] == rPolish)
+                return i;
+        }
+        return i;
+    }
     // Check if the expression matches a hypothesis.
     bool istrivial(Expression const & exp) const
     { return matchhyp(exp) < hypcount(); }
     bool istrivial(Proofsteps const & rPolish, strview typecode) const
     { return matchhyp(rPolish, typecode) < hypcount(); }
-    // length of the rev Polish notation of all hypotheses combined
-    Expression::size_type hypslen() const
+    // Remove unnecessary variables.
+    Bvector trimvars(Bvector const & extrahyps, Proofsteps const & steps) const
+    {
+        Bvector result(extrahyps);
+        return trimvars(result, steps);
+    }
+    Bvector & trimvars(Bvector & extrahyps, Proofsteps const & steps) const;
+    // Length of the rev Polish notation of all necessary hypotheses combined
+    Expression::size_type hypslen(Bvector const & extrahyps = Bvector()) const
     {
         Expression::size_type len(0);
         for (Hypsize i(0); i < hypcount(); ++i)
-            len += hypsrPolish[i].size();
+            len += !(i < extrahyps.size() && extrahyps[i])
+                * hypsrPolish[i].size();
         return len;
+    }
+    // Label of all necessary hypotheses combined, separated by separator
+    std::string hypslabel
+        (Bvector const & extrahyps = Bvector(), char separator = '+') const
+    {
+        std::string result;
+        for (Hypsize i(0); i < hypcount(); ++i)
+            if (!(i < extrahyps.size() && extrahyps[i]))
+                (result += separator) += hypiters[i]->first;
+        return result;
     }
     // # of variables
     Varsused::size_type varcount() const { return varsused.size(); }
-    // # of variables in the expression
-    Varsused::size_type expvarcount() const
-    {
-        Varsused::size_type n(0);
-        FOR (Varsused::const_reference var, varsused)
-            n += var.second.back();
-        return n;
-    }
+    // # of essential hypotheses
+    Hypsize esshypcount() const { return hypcount() - varcount(); }
     // Check if the expression is an equality
     bool isexpeq(Equalities const & equalities) const
     { return equalities.count(exprPolish.back()); }
@@ -77,6 +106,9 @@ struct Assertion
     // return the proof string number 0.
     // Otherwise return NULL.
     const char * match(const int pattern[]) const;
+// Modifying functions
+    // Set the hypotheses, throwing away extra ones.
+    void sethyps(Assertion const & ass, Bvector const & extrahyps = Bvector());
 };
 
 // Find the equivalence relations and their justifications among syntax axioms.

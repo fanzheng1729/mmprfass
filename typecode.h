@@ -32,9 +32,6 @@ struct Typecodes : std::map<std::string, std::pair<std::string, bool> >
             iter = find(iter->second.first);
         return iter->first;
     }
-private:
-    void addsyntax(Command const & command);
-    void addbound(Command const & command);
 };
 
 #endif // TYPECODE_H_INCLUDED

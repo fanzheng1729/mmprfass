@@ -25,9 +25,12 @@ struct SearchBase : Environ, MCTS<Node>
     {
         Node const & node(ptr->game());
         bool makesloop(SearchBase::Nodeptr ptr);
-        return makesloop(ptr) ? Eval(-1, true) :
-            ptr->isourturn() ? node.penv->evalourleaf(node) :
-                node.penv->evaltheirleaf(node);
+        if (makesloop(ptr))
+            return Eval(-1, true);
+        if (ptr->isourturn() && done(node.pgoal, node.typecode))
+            return Eval(1, true);
+        return ptr->isourturn() ? node.penv->evalourleaf(node) :
+            node.penv->evaltheirleaf(node);
     }
     // Proof of the assertion, if any
     Proofsteps const & proof() const

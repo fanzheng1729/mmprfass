@@ -36,7 +36,7 @@ bool Printer::doaddstep(Proofstep step, Expression const & stacktop)
     case Proofstep::ASS:
         {
             Assertion const & ass(step.pass->second);
-            Hypsize const esscount(ass.hypcount() - ass.varcount());
+            Hypsize const esscount(ass.esshypcount());
             if (!enoughitemonstack(esscount, stack.size(), ""))
                 return false;
             // Indent all the essential hypotheses.

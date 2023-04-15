@@ -16,8 +16,9 @@ Prop::Eval Prop::evaltheirleaf(Node const & node) const
         Goals::pointer pgoal(node.hypvec[i]);
         if (done(pgoal, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
-        bool const needshyps(pgoal->second.hypsneeded);
-        Proofsize newhypslen(needshyps ? hypslen : m_assiter->second.hypcount());
+        Bvector const & extrahyps(pgoal->second.extrahyps);
+        Proofsize const newhypslen(extrahyps.empty() ? hypslen :
+                                   m_assiter->second.hypslen(extrahyps));
         double const neweval(score(newhypslen + pgoal->first.size()));
         if (neweval < eval)
             eval = neweval;
@@ -34,7 +35,6 @@ bool Prop::valid(Move const & move) const
     {
         if (move.isfloating(i))
             continue; // Skip floating hypothesis.
-
         Proofsteps const & goal(move.hyprPolish(i));
         Goals::pointer pgoal(((Environ &)(*this)).addgoal(goal, NEW));
         Status const status(pgoal->second.status);
@@ -47,8 +47,7 @@ bool Prop::valid(Move const & move) const
         pgoal->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
-        pgoal->second.hypsneeded = hypsneeded(goal);
-//std::cout << goal << (!pgoal->second.hypsneeded ? "un" : "") << "used for " << goal;
+        pgoal->second.extrahyps = extrahyps(pgoal);
     }
 
     return true;
@@ -120,10 +119,8 @@ struct Substadder : Adder
 void Prop::addhardmove(Assiter iter, Proofsize size, Move & move,
                        Moves & moves) const
 {
-    if (size == 0) return;
     Assertion const & ass(iter->second);
-    Proofsize const nfreevars(ass.varcount() - ass.expvarcount());
-    if (nfreevars == 0 || size < nfreevars)
+    if (ass.nfreevar == 0 || size < ass.nfreevar)
         return;
 
     // Free variables in the theorem to be used
@@ -131,18 +128,34 @@ void Prop::addhardmove(Assiter iter, Proofsize size, Move & move,
     // Type codes of free variables
     Argtypes types;
     // Preallocate for efficiency.
-    freevars.reserve(nfreevars), types.reserve(nfreevars);
-    FOR (Varsused::const_reference var, iter->second.varsused)
+    freevars.reserve(ass.nfreevar), types.reserve(ass.nfreevar);
+    FOR (Varsused::const_reference var, ass.varsused)
         if (!var.second.back())
             freevars.push_back(var.first), types.push_back(var.first.typecode());
 
+    Assertion const & thisass(m_assiter->second);
+    FOR (Varsused::const_reference var, thisass.varsused)
+    {
+        Hypsize i(0);
+        for ( ; i < thisass.hypcount(); ++i)
+            if (thisass.hypiters[i]->second.second &&
+                thisass.hypiters[i]->second.first[1] == var.first)
+                break;
+        if (i == thisass.hypcount())
+        {
+            std::cout << var.first << ' ';
+            FOR (Hypiter hypiter, thisass.hypiters)
+                std::cout << hypiter->first << ' ';
+            throw 1;
+        }
+    }
     // Generate substitution terms.
     FOR (Symbol3 var, freevars)
-        generateupto(varsused, syntaxioms, var.typecode(), size,
+        generateupto(thisass.varsused, syntaxioms, var.typecode(), size,
                      genresult, termcounts);
     // Generate substitutions.
     Substadder adder(freevars, moves, move, *this);
-    dogenerate(varsused, syntaxioms, nfreevars, types, size+1,
+    dogenerate(thisass.varsused, syntaxioms, ass.nfreevar, types, size+1,
                genresult, termcounts, adder);
 //std::cout << moves;
 }
@@ -171,8 +184,7 @@ bool Prop::tryassertion
     Move move(&*iter, substitutions);
     if (size == 0)
     {
-        if (ass.varcount() == ass.expvarcount())
-            // No free variable
+        if (ass.nfreevar == 0)
             return addeasymove(move, moves);
         // Hypothesis-oriented moves
         addhypmoves(move, moves, subprfsteps);
@@ -188,9 +200,6 @@ Moves Prop::ourmovesbysize(Node const & node, Proofsize size) const
 {
     Assiters const & assvec(m_database.assvec());
     Prooftree tree(prooftree(node.pgoal->first));
-    if (unexpected(tree.empty(), "corrupt proof tree when proving goal",
-                   node.pgoal->first))
-        return Moves();
     Moves moves;
 //std::cout << "Finding moves for " << node;
     for (Assiters::size_type i
@@ -200,9 +209,10 @@ Moves Prop::ourmovesbysize(Node const & node, Proofsize size) const
         Assertion const & ass(iter->second);
         if (ass.type & (Assertion::TRIVIAL | Assertion::DUPLICATE))
             continue; // Skip trivial and duplicate theorems.
-        if ((ass.varcount() > ass.expvarcount()) == (size > 0) ||
+        if ((ass.nfreevar > 0) == (size > 0) ||
             (!ass.keyhyps.empty() && size == 0))
-            tryassertion(node.goal(), tree, iter, size, moves);
+            if (tryassertion(node.goal(), tree, iter, size, moves))
+                break; // Move closes the goal.
     }
 //std::cout << moves;
     return moves;
@@ -214,12 +224,12 @@ Prop::size_type testpropsearch
     (Assiter iter, Database const & database, Prop::size_type sizelimit,
      double const parameters[3])
 {
-printass(*iter);
+    printass(*iter);
     Prop tree(iter, database, parameters);
     tree.play(sizelimit);
     // Check answer
     tree.printstats();
-//if (iter->first == "mpdd") tree.navigate();
+//if (iter->first == "pm2.21d") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
@@ -245,12 +255,12 @@ printass(*iter);
         const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
         std::cout << "Duplicate" << std::endl;
     }
-    else if (iter->first == "pm4.78")
+    else if (iter->first == "ex")
     {
-//        Printer printer(&database.typecodes());
-//        verifyproofsteps(tree.proof(), printer, &*iter);
-//        std::cout << printer.str();
-//        std::cin.get();
+        Printer printer(&database.typecodes());
+        verifyproofsteps(tree.proof(), printer, &*iter);
+        std::cout << printer.str();
+        std::cin.get();
     }
 
     return tree.size();

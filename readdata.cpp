@@ -30,8 +30,7 @@ private:
 // Read an expression from the token stream.
 // Discard tokens up to and including the terminator.
 // Returns the expression if okay. Otherwise returns empty expression.
-    Expression readexpression
-        (char type, strview label, char const * terminator);
+    Expression readexp(char type, strview label, char const * terminator);
 // Read the proof labels of a compressed proof.
 // Discard tokens up to and including the closing parenthesis.
 // Returns proof steps if okay. Otherwise returns {NULL}.
@@ -114,8 +113,7 @@ bool Imp::readexprest
 // Read an expression from the token stream.
 // Discard tokens up to and including the terminator.
 // Returns the expression if okay. Otherwise returns empty expression.
-Expression Imp::readexpression
-    (char type, strview label, char const * terminator)
+Expression Imp::readexp(char type, strview label, char const * terminator)
 {
     if (unfinishedstat(m_tokens, "$" + type, label))
         return Expression();
@@ -299,7 +297,7 @@ bool Imp::addfloatinghyp(strview label, strview type, strview var)
 // Read $e statement. Return true iff okay.
 bool Imp::reade(strview label)
 {
-    Expression const & exp(readexpression('e', label, "$."));
+    Expression const & exp(readexp('e', label, "$."));
     if (exp.empty())
         return false;
     // Create new essential hypothesis
@@ -310,7 +308,7 @@ bool Imp::reade(strview label)
 // Read $a statement. Return true iff okay.
 bool Imp::reada(strview label)
 {
-    Expression const & exp(readexpression('a', label, "$."));
+    Expression const & exp(readexp('a', label, "$."));
     if (exp.empty())
         return false;
     // Add axiom to database
@@ -321,7 +319,7 @@ bool Imp::reada(strview label)
 // Read $p statement. Return true iff okay.
 bool Imp::readp(strview label)
 {
-    Expression const & newtheorem(readexpression('p', label, "$="));
+    Expression const & newtheorem(readexp('p', label, "$="));
     if (newtheorem.empty())
         return false;
 

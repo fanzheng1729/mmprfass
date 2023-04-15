@@ -35,11 +35,11 @@ void CNFClauses::append
     }
 }
 
-// Check the satisfaction of clause under assignment.
+// Check the satisfaction of clause under the model.
 // If UNIT, return (UNIT, index of unassigned literal).
 // If UNDECIDED, return (UNDECIDED, index of unassigned literal).
 std::pair<CNFClausesat, CNFClause::size_type> CNFclausesat
-        (CNFClause const & clause, CNFAssignment const & assignment)
+        (CNFClause const & clause, CNFModel const & model)
 {
     bool nonefound(false);
     Atom oldatom(0);
@@ -47,7 +47,7 @@ std::pair<CNFClausesat, CNFClause::size_type> CNFclausesat
 
     FOR (Literal const & lit, clause)
     {
-        switch (assignment.test(lit))
+        switch (model.test(lit))
         {
         case CNFNONE:
             if (nonefound && lit / 2 != oldatom)
@@ -70,7 +70,7 @@ std::pair<CNFClausesat, CNFClause::size_type> CNFclausesat
 // Move clause to the next UNIT, CONTRADICTORY or UNDECIDED clause.
 // Return (Clausesat, index of unassigned literal).
 std::pair<CNFClausesat, CNFClause::size_type> CNFClauses::nextclause
-        (size_type & clause, CNFAssignment const & assignment) const
+        (size_type & clause, CNFModel const & model) const
 {
     if (unexpected(clause >= size(), "clause", clause))
         return std::make_pair(CONTRADICTORY, 0u);
@@ -81,7 +81,7 @@ std::pair<CNFClausesat, CNFClause::size_type> CNFClauses::nextclause
     do
     {
         std::pair<CNFClausesat, CNFClause::size_type> const result
-            (CNFclausesat((*this)[clause], assignment));
+            (CNFclausesat((*this)[clause], model));
 //std::cout << "clausesat(" << clause << ") = " << result.first << std::endl;
         switch (result.first)
         {

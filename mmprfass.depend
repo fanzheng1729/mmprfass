@@ -608,7 +608,7 @@
 	<iostream>
 	"search.h"
 
-1676638391 source:c:\users\elitebook\downloads\metamath\mmprfass\cnf.cpp
+1680180479 source:c:\users\elitebook\downloads\metamath\mmprfass\cnf.cpp
 	<algorithm>
 	<deque>
 	"util/arith.h"
@@ -621,7 +621,7 @@
 	<limits>
 	<typeinfo>
 
-1676638580 c:\users\elitebook\downloads\metamath\mmprfass\cnf.h
+1680188978 c:\users\elitebook\downloads\metamath\mmprfass\cnf.h
 	<algorithm>
 	<cmath>
 	<cstddef>
@@ -646,10 +646,10 @@
 	<utility>
 	<vector>
 
-1680085200 source:c:\users\elitebook\downloads\metamath\mmprfass\comment.cpp
+1680169546 source:c:\users\elitebook\downloads\metamath\mmprfass\comment.cpp
 	<algorithm>
-	<cstring>
 	<fstream>
+	<numeric>
 	<sstream>
 	<utility>
 	"comment.h"
@@ -657,7 +657,7 @@
 	"token.h"
 	"util/for.h"
 
-1680093287 c:\users\elitebook\downloads\metamath\mmprfass\comment.h
+1680171759 c:\users\elitebook\downloads\metamath\mmprfass\comment.h
 	<cstddef>
 	<iosfwd>
 	<map>
@@ -699,11 +699,8 @@
 	"proof/analyze.h"
 	"syntaxiom.h"
 
-1680093875 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
-	<algorithm>
+1681498139 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
 	"proof/analyze.h"
-	"util.h"
-	"util/for.h"
 
 1671289362 c:\users\elitebook\downloads\metamath\mmprfass\vars.h
 
@@ -753,16 +750,16 @@
 	"io.h"
 	"strview.h"
 
-1680123307 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1681498240 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
 	"io.h"
-	"read.h"
 	"search/prop.h"
 	"stmt.h"
 	"test.h"
 	"util/timer.h"
+	"read.h"
 
 1671366492 c:\users\elitebook\downloads\metamath\mmprfass\readdata.h
 
@@ -815,7 +812,7 @@
 
 1673193790 source:c:\users\elitebook\downloads\metamath\mmprfass\msg.cpp
 
-1680096507 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\analyze.cpp
+1681071335 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\analyze.cpp
 	"analyze.h"
 	"../ass.h"
 	"../util/arith.h"
@@ -905,7 +902,7 @@
 	"io.h"
 	"search.h"
 
-1676405606 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\step.cpp
+1680961750 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\step.cpp
 	<iostream>
 	"../ass.h"
 	"../scope.h"
@@ -922,7 +919,7 @@
 	"../util/filter.h"
 	"verify.h"
 
-1672335882 c:\users\elitebook\downloads\metamath\mmprfass\disjvars.h
+1681065084 c:\users\elitebook\downloads\metamath\mmprfass\disjvars.h
 	<iosfwd>
 	"proof.h"
 
@@ -939,7 +936,7 @@
 	"util/for.h"
 	"util/iter.h"
 
-1680086603 source:c:\users\elitebook\downloads\metamath\mmprfass\readdata.cpp
+1680963561 source:c:\users\elitebook\downloads\metamath\mmprfass\readdata.cpp
 	"ass.h"
 	"database.h"
 	"util/filter.h"
@@ -967,17 +964,16 @@
 	"util/find.h"
 	"util/for.h"
 
-1676572278 source:c:\users\elitebook\downloads\metamath\mmprfass\sat.cpp
+1680181258 source:c:\users\elitebook\downloads\metamath\mmprfass\sat.cpp
 	<limits>
 	"io.h"
 	"msg.h"
-	"satsolve/watchlst.h"
 	"satsolve/DPLL.h"
 
-1671971089 c:\users\elitebook\downloads\metamath\mmprfass\satsolve\watchlst.h
+1680180374 c:\users\elitebook\downloads\metamath\mmprfass\satsolve\watchlst.h
 	"../sat.h"
 
-1676572278 c:\users\elitebook\downloads\metamath\mmprfass\sat.h
+1680181859 c:\users\elitebook\downloads\metamath\mmprfass\sat.h
 	"cnf.h"
 
 1680099204 c:\users\elitebook\downloads\metamath\mmprfass\satsolve\dpll.h
@@ -997,17 +993,17 @@
 	<iostream>
 	"DPLL.h"
 
-1676572278 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\test.cpp
+1680181012 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\test.cpp
 	<iostream>
 	"../cnf.h"
 	"../util/arith.h"
 
-1673965827 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\watchlst.cpp
+1680180807 source:c:\users\elitebook\downloads\metamath\mmprfass\satsolve\watchlst.cpp
 	"../io.h"
 	"../util/for.h"
 	"watchlst.h"
 
-1679838497 source:c:\users\elitebook\downloads\metamath\mmprfass\scope.cpp
+1680970815 source:c:\users\elitebook\downloads\metamath\mmprfass\scope.cpp
 	<iostream>
 	"ass.h"
 	"getproof.h"
@@ -1067,7 +1063,7 @@
 	<algorithm>
 	<cstddef>
 
-1676571988 source:c:\users\elitebook\downloads\metamath\mmprfass\disjvars.cpp
+1681065246 source:c:\users\elitebook\downloads\metamath\mmprfass\disjvars.cpp
 	<algorithm>
 	<utility>
 	"io.h"
@@ -1081,7 +1077,7 @@
 
 1672433677 c:\users\elitebook\downloads\metamath\mmprfass\read.h
 
-1679777670 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
+1681137375 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
 	"ass.h"
 	"util/filter.h"
 	"util/for.h"
@@ -1196,7 +1192,7 @@
 	"../util/filter.h"
 	"../util/iter.h"
 
-1680026479 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
+1681048842 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
 	<algorithm>
 	"environ.h"
 	"../io.h"
@@ -1216,13 +1212,13 @@
 1679842092 c:\users\elitebook\downloads\metamath\mmprfass\search\gen.h
 	"../proof/step.h"
 
-1676630803 c:\users\elitebook\downloads\metamath\mmprfass\propctor.h
+1680189845 c:\users\elitebook\downloads\metamath\mmprfass\propctor.h
 	<iosfwd>
 	"cnf.h"
 	"def.h"
 	"proof/step.h"
 
-1676638532 source:c:\users\elitebook\downloads\metamath\mmprfass\propctor.cpp
+1681058221 source:c:\users\elitebook\downloads\metamath\mmprfass\propctor.cpp
 	<algorithm>
 	<limits>
 	"proof/analyze.h"
@@ -1240,18 +1236,19 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1680123583 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1681498225 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1680123689 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1681068919 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../database.h"
+	"../disjvars.h"
 	"gen.h"
 
-1679925867 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
+1681048832 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
 	<iostream>
 	"../ass.h"
 	"../proof/verify.h"
@@ -1266,7 +1263,7 @@
 	<vector>
 	"../util/for.h"
 
-1680094589 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
+1680173322 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
 	"../MCTS/MCTS.h"
 	"node.h"
 	"../typecode.h"
@@ -1276,11 +1273,11 @@
 	"base.h"
 	"io.h"
 
-1680094323 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+1681497650 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
 	"../proof/step.h"
 	"../util/for.h"
 
-1679927383 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
+1681498204 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
 	"environ.h"
 	"move.h"
 	"node.h"
@@ -1288,14 +1285,14 @@
 1680084398 c:\users\elitebook\downloads\metamath\mmprfass\proof\printer.h
 	"step.h"
 
-1680085383 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\printer.cpp
+1681048643 source:c:\users\elitebook\downloads\metamath\mmprfass\proof\printer.cpp
 	"../ass.h"
 	"../io.h"
 	"../typecode.h"
 	"../util/arith.h"
 	"verify.h"
 
-1680092986 c:\users\elitebook\downloads\metamath\mmprfass\typecode.h
+1680168762 c:\users\elitebook\downloads\metamath\mmprfass\typecode.h
 	<map>
 	<utility>
 	"strview.h"

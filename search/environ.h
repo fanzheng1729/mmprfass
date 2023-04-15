@@ -28,7 +28,7 @@ struct Environ
 {
     // Evaluation (value, sure?)
     typedef std::pair<double, bool> Eval;
-    Environ(Assiter iter) : m_assiter(iter) {}
+    Environ(Assiter iter);
     // Proof status of a goal
     enum Status {PROVEN = 1, PENDING = 0, FALSE = -1, NEW = -2};
     // Data associated with the goal
@@ -40,8 +40,8 @@ struct Environ
         Proofsteps proofsteps;
         Goaldata(Status s = PENDING, Proofsteps const & steps = Proofsteps()) :
             status(s), proofsteps(steps) {}
-        // If the goal needs hypotheses, i.e., holds conditionally.
-        bool hypsneeded;
+        // Unnecessary hypothesis of the goal
+        Bvector extrahyps;
     };
     // Map: goal -> Evaluation
     typedef std::map<Proofsteps, Goaldata> Goals;
@@ -68,14 +68,19 @@ struct Environ
     // Return its address.
     virtual Environ * makeenv(Assiter iter) const = 0;
     // Return the simplified assertion for the goal of the node to hold.
-    virtual Assertion assertion(Node const &) const = 0;
+    virtual Assertion assertion(Node const & node) const = 0;
+    // Returns the label of a sub environment from a node.
+    std::string label(Node const & node, char separator = '+') const;
     // Add a sub environment for the node. Return true iff it is added.
     bool addsubenv(Node const & node, strview label);
+    bool addsubenv(Node const & node) { return addsubenv(node, label(node)); }
     virtual ~Environ()
     {
         FOR (Subenvs::const_reference subenv, subenvs)
             delete subenv.second;
     }
+    // Length of the rev Polish notation of all hypotheses combined
+    Proofsize const hypslen;
 protected:
     // Iterator to the assertion to be proved
     Assiter m_assiter;

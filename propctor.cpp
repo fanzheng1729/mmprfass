@@ -230,8 +230,8 @@ bool Propctors::addcnffromrPolish
 //std::cout << "New CNF:\n" << cnf;
                 return true;
             }
-            std::cout << "Unexpected hypothesis " << step << std::endl;
-            return false;
+            std::cerr << "In " << proofsteps;
+            return !unexpected(true, "hypothesis", step);
         }
 //std::cout << "operator ";
         // CNF
@@ -252,7 +252,7 @@ bool Propctors::addcnffromrPolish
 }
 
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
-CNFClauses Propctors::hypcnf(struct Assertion const & ass, Atom & count) const
+CNFClauses Propctors::hypscnf(struct Assertion const & ass, Atom & count) const
 {
     Hypiters const & hyps(ass.hypiters);
     // One atom for each mandatory hypotheses (only floating ones are used)
@@ -281,7 +281,7 @@ CNFClauses Propctors::cnf
 {
     // Add hypotheses.
     Atom count(0);
-    CNFClauses cnf(hypcnf(ass, count));
+    CNFClauses cnf(hypscnf(ass, count));
     // Add conclusion.
     if (!addcnffromrPolish(proofsteps, ass.hypiters, cnf, count))
         return CNFClauses();

@@ -1,9 +1,8 @@
 #include <limits>
 #include "io.h"
 #include "msg.h"
-#include "satsolve/watchlst.h"
-#include "satsolve/DPLL.h"
 
+#include "satsolve/DPLL.h"
 typedef DPLL_solver Solver_used;
 
 // Return true if the SAT instance is satisfiable.

@@ -35,7 +35,7 @@ struct Propctors : public std::map<strview, Propctor>
         (Proofsteps const & proofsteps, Hypiters const & hyps,
          CNFClauses & cnf, Atom & atomcount) const;
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
-    CNFClauses hypcnf(struct Assertion const & ass, Atom & count) const;
+    CNFClauses hypscnf(struct Assertion const & ass, Atom & count) const;
 // Translate a propositional assertion to the CNF of an SAT instance.
     CNFClauses cnf
         (struct Assertion const & ass, Proofsteps const & proofsteps) const;

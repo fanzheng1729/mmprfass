@@ -18,26 +18,6 @@ static bool checkcnffromtruthtable(Bvector const & tt)
     return !isconst || (cnf.size() == 2 && cnf[0].size() == 1);
 }
 
-#if !-1 == 0 && !0 != 0 && !1 != 0
-static const std::logical_not<int> assigned;
-#else
-static bool assigned(int const x) { return x != CNFNONE; }
-#endif
-
-static const char * checkunitprop
-    (CNFClauses const & cnf, CNFTruthvalue value, std::ptrdiff_t assignedcount)
-{
-    static const char msg[] = "unitprop()";
-
-    CNFAssignment a(cnf.atomcount());
-    if (cnf.unitprop(a).first == value &&
-        std::count_if(a.begin(), a.end(), assigned) == assignedcount)
-        return NULL;
-
-    std::cerr << msg << std::endl;
-    return msg;
-}
-
 static const char * checksat(CNFClauses const & cnf, bool const sat)
 {
     const char * msg(NULL);
@@ -54,22 +34,13 @@ static const char * checksat(CNFClauses const & cnf, bool const sat)
     return msg;
 }
 
-static const char * checkcnfsat
-    (CNFClauses const & cnf, CNFTruthvalue unitprop, std::ptrdiff_t assignedcount,
-     bool const sat)
-{
-    const char * s(checkunitprop(cnf, unitprop, assignedcount));
-    if (s) return s;
-    else return checksat(cnf, sat);
-}
-
 const char * testsat1()
 {
     CNFClauses v;
-    if (checkcnfsat(v, CNFTRUE, 0, true))
+    if (checksat(v, true))
         return "empty instance";
     v.resize(1);
-    if (checkcnfsat(v, CNFFALSE, 0, false))
+    if (checksat(v, false))
         return "empty clause";
     static const Literal a[4][3] = {
         {0, 2, 5},  // A, B, !C
@@ -82,10 +53,10 @@ const char * testsat1()
     v.push_back(CNFClause(a[1], a[1] + 2));
     v.push_back(CNFClause(a[2], a[2] + 1));
     v.push_back(CNFClause(a[3], a[3] + 2));
-    if (checkcnfsat(v, CNFTRUE, 3, true))
+    if (checksat(v, true))
         return "satisfiable instance";
     v[3][1] = 5;    // !A, !C
-    if (checkcnfsat(v, CNFFALSE, 3, false))
+    if (checksat(v, false))
         return "satisfiable instance";
 
     return "OKay";
