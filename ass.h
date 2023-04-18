@@ -36,6 +36,7 @@ struct Assertion
         AXIOM = 1,
         TRIVIAL = 2,
         DUPLICATE = 4,
+        USELESS = TRIVIAL | DUPLICATE,
         PROPOSITIONAL = 8
     };
     unsigned type;

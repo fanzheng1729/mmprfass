@@ -2,7 +2,6 @@
 #define NODE_H_INCLUDED
 
 #include <algorithm>
-#include "environ.h"
 #include "../io.h"
 #include "../util/iter.h"
 #include "move.h"
@@ -36,7 +35,6 @@ struct Node
     // Proof attempt made, if not our turn
     Move attempt;
     // Essential hypotheses needed, if not our turn
-    std::vector<Environ::Goals::pointer> hypvec;
     std::set<Environ::Goals::pointer> hypset;
     // Pointer to the current and initial environments
     Environ *penv, *penv0;
@@ -66,7 +64,7 @@ struct Node
     // Set the hypothesis set of a node.
     void sethyps()
     {
-        std::remove_copy_if(hypvec.begin(), hypvec.end(),
+        std::remove_copy_if(attempt.hypvec.begin(), attempt.hypvec.end(),
                             end_inserter(hypset),
                             std::logical_not<const void *>());
     }
@@ -81,16 +79,8 @@ struct Node
     {
         if (isourturn)
         {
-            // The move
+            // Record the move
             attempt = move;
-            // Hypotheses
-            if (move.type == Move::ASS)
-            {
-                hypvec.resize(move.hypcount());
-                for (Hypsize i(0); i < move.hypcount(); ++i)
-                    if (!move.isfloating(i))
-                        hypvec[i] = penv->addgoal(move.hyprPolish(i));
-            }
             return true;
         }
         // Not our turn. Get last move (proof attempt).
@@ -103,7 +93,7 @@ struct Node
                 typecode != lastmove.exptypecode())
                 return false;
             // Pick the hypothesis.
-            pgoal = pparent->hypvec[move.index];
+            pgoal = lastmove.hypvec[move.index];
             typecode = lastmove.hyptypecode(move.index);
             pparent = NULL;
             return true;
@@ -114,14 +104,8 @@ struct Node
             return false;
         }
     }
-    Moves legalmoves(bool isourturn, std::size_t stage) const
+    Moves theirmoves() const
     {
-        if (isourturn)
-            return penv->done(pgoal, typecode) ? Moves() :
-                penv->ourlegalmoves(*this, stage);
-        // Their turn
-        if (stage > 0)
-            return Moves();
         if (attempt.type == Move::ASS)
         {
             Moves result;
@@ -132,6 +116,22 @@ struct Node
             return result;
         }
         return Moves(attempt.type == Move::DEFER, Move::DEFER);
+    }
+    Moves ourmoves(std::size_t stage) const
+    {
+        if (penv->done(pgoal, typecode))
+            return Moves();
+//std::cout << "stage " << stage << std::endl;
+        if (penv->staged)
+            return penv->ourmoves(*this, stage);
+
+        Moves moves(penv->ourmoves(*this, defercount()));
+        moves.push_back(Move::DEFER);
+        return moves;
+    }
+    Moves legalmoves(bool isourturn, std::size_t stage) const
+    {
+        return isourturn ? ourmoves(stage) : stage > 0 ? Moves() : theirmoves();
     }
     // Add proof for a node using an assertion.
     void writeproof() const
@@ -145,10 +145,9 @@ struct Node
             if (attempt.isfloating(i))
                 hyps[i] = &attempt.substitutions[attempt.hypiter(i)->second.first[1]];
             else
-                hyps[i] = &hypvec[i]->second.proofsteps;
+                hyps[i] = &attempt.hypvec[i]->second.proofsteps;
 //std::cout << "Added hyp\n" << *hyps.back();
         }
-
         // The whose proof
         pgoal->second.status = Environ::PROVEN;
         ::writeproof(pgoal->second.proofsteps, attempt.pass, hyps);

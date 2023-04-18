@@ -25,7 +25,7 @@ static bool makesloop(SearchBase::Nodeptr ptr, SearchBase::Nodeptr ancestor)
         if (sibling.attempt.type != Move::ASS || child->eval().first == -1)
             continue; // sibling invalid
         if (child.parent() == ptr.parent() &&
-            !sibling.hypvec.empty() && sibling.hypset.empty())
+            !sibling.attempt.hypvec.empty() && sibling.hypset.empty())
             continue; // brother not checked
         if (&node != &sibling && node >= sibling)
             return true;
@@ -36,17 +36,17 @@ static bool makesloop(SearchBase::Nodeptr ptr, SearchBase::Nodeptr ancestor)
 // Check if ptr duplicates upstream goals.
 bool makesloop(SearchBase::Nodeptr ptr)
 {
-    Node const & node(ptr->game());
-    if (node.attempt.type != Move::ASS)
+    Move const & move(ptr->game().attempt);
+    if (move.type != Move::ASS)
         return false;
     // Now it is a move using an assertion.
     // Check if any of the hypotheses appears in a parent node.
     const_cast<Node &>(ptr->game()).sethyps();
-    for (Hypsize i(0); i < node.attempt.hypcount(); ++i)
+    for (Hypsize i(0); i < move.hypcount(); ++i)
     {
-        if (node.attempt.isfloating(i))
+        if (move.isfloating(i))
             continue; // Skip floating hypotheses.
-        Goal goal = {&node.hypvec[i]->first, node.attempt.hyptypecode(i)};
+        Goal goal = {&move.hypvec[i]->first, move.hyptypecode(i)};
         if (makesloop(goal, ptr.parent()))
             return true;
     }

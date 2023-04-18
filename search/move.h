@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "../ass.h"
+#include "environ.h"
 #include "../proof/verify.h"
 
 // Move in proof search tree
@@ -26,6 +27,8 @@ struct Move
     Assptr pass;
     // Substitutions to be used, if our turn
     Substitutions substitutions;
+    // Essential hypotheses needed, if our turn
+    std::vector<Environ::Goals::pointer> hypvec;
     Move(Type t = NONE) : type(t), pass(NULL) {}
     // A move applying an assertion, on our turn
     Move(Assptr ptr, Substitutions const & subst) :

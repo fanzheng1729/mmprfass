@@ -129,7 +129,7 @@ int main(int argc, char ** argv)
         return EXIT_FAILURE;
 
     double parameters[] = {0, 6e-4, 0};
-//    double parameters[] = {0, ????, 0, Prop::STAGED};
+//    double parameters[] = {0, 6e-4, SearchBase::STAGED};
 //    Assiter iter(database.assertions().find("mpd"));
 //    Prop tree(iter, database, parameters);
 //    tree.play(1 << 10);

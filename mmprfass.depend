@@ -680,7 +680,7 @@
 	"strview.h"
 	"util.h"
 
-1676551646 c:\users\elitebook\downloads\metamath\mmprfass\util.h
+1681833460 c:\users\elitebook\downloads\metamath\mmprfass\util.h
 	<algorithm>
 	<functional>
 	<utility>
@@ -699,7 +699,7 @@
 	"proof/analyze.h"
 	"syntaxiom.h"
 
-1681498139 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
+1681832312 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
 	"proof/analyze.h"
 
 1671289362 c:\users\elitebook\downloads\metamath\mmprfass\vars.h
@@ -750,7 +750,7 @@
 	"io.h"
 	"strview.h"
 
-1681498240 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1681745762 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -870,7 +870,7 @@
 	"../proof.h"
 	"verify.h"
 
-1676480433 c:\users\elitebook\downloads\metamath\mmprfass\mcts\mcts.h
+1681746333 c:\users\elitebook\downloads\metamath\mmprfass\mcts\mcts.h
 	<algorithm>
 	<cmath>
 	<iostream>
@@ -1192,9 +1192,8 @@
 	"../util/filter.h"
 	"../util/iter.h"
 
-1681048842 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
+1681853304 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
 	<algorithm>
-	"environ.h"
 	"../io.h"
 	"../util/iter.h"
 	"move.h"
@@ -1236,21 +1235,21 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1681498225 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1681851576 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1681068919 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1681851078 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
-	"../database.h"
 	"../disjvars.h"
 	"gen.h"
 
-1681048832 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
+1681852153 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
 	<iostream>
 	"../ass.h"
+	"environ.h"
 	"../proof/verify.h"
 
 1674252006 source:c:\users\elitebook\downloads\metamath\mmprfass\mcdags\test.cpp
@@ -1263,21 +1262,23 @@
 	<vector>
 	"../util/for.h"
 
-1680173322 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
+1681749351 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
+	"environ.h"
 	"../MCTS/MCTS.h"
 	"node.h"
 	"../typecode.h"
 	"../util/filter.h"
 
-1680094636 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
+1681852393 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
 	"base.h"
 	"io.h"
 
-1681497650 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+1681852043 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+	"../database.h"
 	"../proof/step.h"
 	"../util/for.h"
 
-1681498204 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
+1681853173 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
 	"environ.h"
 	"move.h"
 	"node.h"
