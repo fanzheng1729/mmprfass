@@ -6,8 +6,6 @@
 Bvector & Assertion::trimvars
     (Bvector & extrahyps, Proofsteps const & conclusion) const
 {
-    if (extrahyps.empty())
-        return extrahyps;
 //std::cout << conclusion;
     extrahyps.resize(hypcount());
     extrahyps.flip();

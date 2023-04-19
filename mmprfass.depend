@@ -1077,7 +1077,7 @@
 
 1672433677 c:\users\elitebook\downloads\metamath\mmprfass\read.h
 
-1681908094 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
+1681936993 source:c:\users\elitebook\downloads\metamath\mmprfass\ass.cpp
 	"ass.h"
 	"util/filter.h"
 	"util/for.h"
@@ -1235,12 +1235,12 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1681932947 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1681937220 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1681929881 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1681937990 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../disjvars.h"
@@ -1278,7 +1278,7 @@
 	"../proof/step.h"
 	"../util/for.h"
 
-1681930290 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
+1681936626 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
 	"environ.h"
 	"move.h"
 	"node.h"

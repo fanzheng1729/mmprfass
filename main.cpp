@@ -128,7 +128,7 @@ int main(int argc, char ** argv)
     if (!cnf.sat())
         return EXIT_FAILURE;
 
-    double parameters[] = {0, 6e-4, 0};
+    double parameters[] = {0, 1e-3, 0};
 //    double parameters[] = {0, 6e-4, SearchBase::STAGED};
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
