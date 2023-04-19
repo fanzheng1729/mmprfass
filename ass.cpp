@@ -3,11 +3,12 @@
 #include "util/for.h"
 
 // Remove unnecessary variables.
-Bvector & Assertion::trimvars(Bvector & extrahyps, Proofsteps const & steps) const
+Bvector & Assertion::trimvars
+    (Bvector & extrahyps, Proofsteps const & conclusion) const
 {
     if (extrahyps.empty())
         return extrahyps;
-//std::cout << steps;
+//std::cout << conclusion;
     extrahyps.resize(hypcount());
     extrahyps.flip();
     for (Hypsize i(0); i < hypcount(); ++i)
@@ -20,12 +21,11 @@ Bvector & Assertion::trimvars(Bvector & extrahyps, Proofsteps const & steps) con
 //std::cout << "use of " << hyp.first[1] << ' ';
         Hypsize j(hypcount() - 1);
         for ( ; j != Hypsize(-1); --j)
-            if (extrahyps[j] && usage[j]) break;
+            if (extrahyps[j] && usage[j])
+                break;
 //std::cout << j << ' ';
-        if ((extrahyps[i] = j != Hypsize(-1)))
-            continue; // Variable appears in some necessary essential hypothesis
-        // Check if the variable appears in steps.
-        extrahyps[i] = util::filter(steps)(hypiters[i]->first.c_str);
+        extrahyps[i] = (j != Hypsize(-1) ||
+                        util::filter(conclusion)(hypiters[i]->first.c_str));
     }
     extrahyps.flip();
 //std::cout << extrahyps;

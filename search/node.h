@@ -27,7 +27,7 @@ struct Node
     typedef ::Move Move;
     typedef ::Moves Moves;
     // Pointer to rev Polish of expression to be proved
-    Environ::Goals::pointer pgoal;
+    Environ::pGoal pgoal;
     strview typecode;
     Goal goal() const { Goal goal = {&pgoal->first, typecode}; return goal; }
     // Pointer to the parent, if our turn and node is deferred
@@ -35,11 +35,11 @@ struct Node
     // Proof attempt made, if not our turn
     Move attempt;
     // Essential hypotheses needed, if not our turn
-    std::set<Environ::Goals::pointer> hypset;
+    std::set<Environ::pGoal> hypset;
     // Pointer to the current and initial environments
     Environ *penv, *penv0;
     Node() : pgoal(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
-    Node(Environ::Goals::pointer goal, strview type, Environ * p = NULL) :
+    Node(Environ::pGoal goal, strview type, Environ * p = NULL) :
         pgoal(goal), typecode(type), pparent(NULL), penv(p), penv0(p) {}
     Node(Node const & node) :
         pgoal(node.pgoal), typecode(node.typecode), pparent(&node),
@@ -99,6 +99,7 @@ struct Node
             return true;
         case Move::DEFER:
             pparent = pparent->pparent;
+//std::cout << "node @ " << this << " in " << penv << ' ' << pparent << '\n';
             return true;
         default: // Empty move
             return false;

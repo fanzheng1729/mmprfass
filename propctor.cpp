@@ -200,37 +200,37 @@ static void addlitatomequiv(CNFClauses & cnf, Literal lit, Atom atom)
 }
 
 // Add CNF clauses from reverse Polish notation.
-// # of auxiliary atoms start from atomcount.
+// # of auxiliary atoms start from natom.
 // Return true if okay. First auxiliary atom = hyps.size()
-bool Propctors::addcnffromrPolish
-    (Proofsteps const & proofsteps, Hypiters const & hyps,
-     CNFClauses & cnf, Atom & atomcount) const
+bool Propctors::addclause
+    (Proofsteps const & formula, Hypiters const & hyps,
+     CNFClauses & cnf, Atom & natom) const
 {
-    Prooftree const & tree(prooftree(proofsteps));
+    Prooftree const & tree(prooftree(formula));
     if (unexpected(tree.empty(), "corrupt proof tree when adding CNF from",
-                   proofsteps))
+                   formula))
         return false;
 
-    std::vector<Literal> literals(proofsteps.size());
-    for (Proofsize i(0); i < proofsteps.size(); ++i)
+    std::vector<Literal> literals(formula.size());
+    for (Proofsize i(0); i < formula.size(); ++i)
     {
-        const char * step(proofsteps[i]);
+        const char * step(formula[i]);
 //std::cout << "Step " << step << ":\t";
-        if (proofsteps[i].type == Proofstep::HYP)
+        if (formula[i].type == Proofstep::HYP)
         {
             Hypsize const hypindex(util::find(hyps, step) - hyps.begin());
             if (hypindex < hyps.size())
             {
                 literals[i] = (hypindex) * 2;
 //std::cout << "argument " << hypindex << std::endl;
-                if (proofsteps.size() != 1)
+                if (formula.size() != 1)
                     continue;
                 // Expression with a single variable
-                addlitatomequiv(cnf, literals[i], atomcount++);
+                addlitatomequiv(cnf, literals[i], natom++);
 //std::cout << "New CNF:\n" << cnf;
                 return true;
             }
-            std::cerr << "In " << proofsteps;
+            std::cerr << "In " << formula;
             return !unexpected(true, "hypothesis", step);
         }
 //std::cout << "operator ";
@@ -243,8 +243,8 @@ bool Propctors::addcnffromrPolish
         for (Prooftreehyps::size_type j(0); j < args.size(); ++j)
             args[j] = literals[tree[i][j]];
         // Add the CNF.
-        cnf.append(itercnf->second.cnf, atomcount, args.data(), args.size());
-        literals[i] = atomcount++ * 2;
+        cnf.append(itercnf->second.cnf, natom, args.data(), args.size());
+        literals[i] = natom++ * 2;
 //std::cout << literals[i] / 2 << std::endl;
     }
 //std::cout << "New CNF:\n" << cnf;
@@ -252,55 +252,58 @@ bool Propctors::addcnffromrPolish
 }
 
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
-CNFClauses Propctors::hypscnf(struct Assertion const & ass, Atom & count) const
+Hypscnf Propctors::hypscnf(struct Assertion const & ass, Atom & natom,
+                           Bvector const & extrahyps) const
 {
     Hypiters const & hyps(ass.hypiters);
-    // One atom for each mandatory hypotheses (only floating ones are used)
-    count = hyps.size();
+    natom = hyps.size(); // One atom for each floating hypotheses
 
-    CNFClauses cnf;
-    // Add hypotheses.
+    Hypscnf result;
+    CNFClauses & cnf(result.first);
+    result.second.resize(hyps.size());
+//std::cout << "Adding clauses for ";
     for (Hypsize i(0); i < hyps.size(); ++i)
     {
-//std::cout << hyps[i]->first << std::endl;
-        Hypothesis const & hyp(hyps[i]->second);
-        if (hyp.second)
-            continue; // Skip floating hypothesis.
-        // Add CNF of hypothesis.
-        if (!addcnffromrPolish(ass.hypsrPolish[i], hyps, cnf, count))
-            return CNFClauses();
-        // Assume the hypothesis.
-        cnf.closeoff();
+        if (!hyps[i]->second.second && !(i < extrahyps.size() && extrahyps[i]))
+        {
+//std::cout << hyps[i]->first << ' ' << std::endl;
+            if (!addclause(ass.hypsrPolish[i], hyps, cnf, natom))
+                return Hypscnf();
+            // Assume the hypothesis.
+            cnf.closeoff((natom - 1) * 2);
+        }
+        result.second[i] = cnf.size();
     }
-    return cnf;
+    return result;
 }
 
 // Translate a propositional assertion to the CNF of an SAT instance.
 CNFClauses Propctors::cnf
-    (struct Assertion const & ass, Proofsteps const & proofsteps) const
+    (struct Assertion const & ass, Proofsteps const & conclusion,
+     Bvector const & extrahyps) const
 {
     // Add hypotheses.
-    Atom count(0);
-    CNFClauses cnf(hypscnf(ass, count));
+    Atom natom(0);
+    CNFClauses cnf(hypscnf(ass, natom, extrahyps).first);
     // Add conclusion.
-    if (!addcnffromrPolish(proofsteps, ass.hypiters, cnf, count))
+    if (!addclause(conclusion, ass.hypiters, cnf, natom))
         return CNFClauses();
     // Negate conclusion.
-    cnf.closeoff(true);
+    cnf.closeoff((natom - 1) * 2 + 1);
 
     return cnf;
 }
 
 // Check if an expression is valid given a propositional assertion.
 bool Propctors::checkpropsat
-    (struct Assertion const & ass, Proofsteps const & proofsteps) const
+    (struct Assertion const & ass, Proofsteps const & conclusion) const
 {
-    CNFClauses const & clauses(cnf(ass, proofsteps));
+    CNFClauses const & clauses(cnf(ass, conclusion));
 
     if (!clauses.sat())
         return true;
 
-    if (&proofsteps == &ass.exprPolish)
+    if (&conclusion == &ass.exprPolish)
         std::cerr << "CNF:\n" << clauses << "counter-satisfiable" << std::endl;
     return false;
 }

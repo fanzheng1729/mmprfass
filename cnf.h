@@ -69,9 +69,9 @@ struct CNFClauses : public std::vector<CNFClause>
     void append
         (CNFClauses const & cnf, Atom const atomcount,
          Literal const * const arglist, Atom const argcount);
-// Add a clause containing the next atom alone (or its negation if negate = 1).
-    void closeoff(bool negate = false)
-    { push_back(CNFClause(1, (atomcount() - 1) * 2 + negate)); }
+// Add a clause containing a single literal/the next atom alone or its negation.
+    void closeoff(Literal lit) { push_back(CNFClause(1, lit)); }
+    void closeoff(bool negate = false) { closeoff((atomcount()-1)*2+negate); }
 // Return if there is no contradiction in the model so far.
     bool okaysofar(CNFModel const & model) const
     {
@@ -135,5 +135,8 @@ template<class T> std::pair<CNFTruthvalue, CNFClauses::size_type>
         ++clause %= size();
     }
 }
+
+// Pair (CNF, # clauses corresponding to hypotheses)
+typedef std::pair<CNFClauses, std::vector<CNFClauses::size_type> > Hypscnf;
 
 #endif // SAT_H_INCLUDED

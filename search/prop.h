@@ -27,40 +27,36 @@ struct Prop : SearchBase
     // Check if a goal is valid.
     virtual bool valid(Proofsteps const & goal) const
     {
-        CNFClauses cnf(hypscnf);
+        CNFClauses cnf(hypscnf.first);
         Atom natom(hypatomcount);
-        if (!m_database.propctors().addcnffromrPolish
+        if (!m_database.propctors().addclause
             (goal, m_assiter->second.hypiters, cnf, natom))
             return false;
-        cnf.closeoff(true);
+        cnf.closeoff((natom - 1) * 2 + 1);
         return !cnf.sat();
     }
-    // Check if a goal needs hypotheses, i.e., holds conditionally.
-    bool hypsneeded(Proofsteps const & goal) const
-    {
-        CNFClauses cnf;
-        Atom natom(hypatomcount);
-        Assertion const & ass(m_assiter->second);
-        m_database.propctors().addcnffromrPolish(goal, ass.hypiters, cnf, natom);
-        cnf.closeoff(true);
-        // counter-satisfiable = needs hypotheses
-        return cnf.sat() && ass.esshypcount();
-    }
     // Return the extra hypotheses of a goal.
-    virtual Bvector extrahyps(Goals::pointer pgoal) const
+    virtual Bvector extrahyps(pGoal pgoal) const
     {
         Assertion const & ass(m_assiter->second);
-        return ass.esshypcount() == 0 || hypsneeded(pgoal->first) ? Bvector() :
-            ass.trimvars(Bvector(ass.hypcount(), true), pgoal->first);
+        Bvector result(ass.hypcount(), false);
+        Hypsize nextra(0); // # of extra essential hypothesis
+        for (Hypsize i(ass.hypcount() - 1); i != Hypsize(-1); --i)
+        {
+            if (ass.hypiters[i]->second.second)
+                continue; // Skip floating hypothesis.
+            result[i] = true;
+            CNFClauses const & cnf(m_database.propctors().cnf(ass, pgoal->first,
+                                                              result));
+            nextra += result[i] = !cnf.sat();
+        }
+        return nextra ? ass.trimvars(result, pgoal->first) : Bvector();
     }
-    // Evaluate leaf nodes, and record the proof if proven.
-    virtual Eval evalourleaf(Node const & node) const
+    // Simplify the hypotheses of our node.
+    virtual void simphyps(Node const & node) const
     {
-//std::cout << "Evaluating " << node;
-        if (!node.pgoal->second.extrahyps.empty() &&
-            node.penv0->addsubenv(node))
+        if (node.penv0->addsubenv(node, label(node), assertion(node)))
             static_cast<SearchBase *>(node.penv)->clear();
-        return Environ::evalourleaf(node);
     }
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address.
@@ -91,7 +87,7 @@ private:
     Genresult  mutable genresult;
     Termcounts mutable termcounts;
     // The CNF of all hypotheses combined
-    CNFClauses const hypscnf;
+    Hypscnf const hypscnf;
     Atom hypatomcount;
 };
 

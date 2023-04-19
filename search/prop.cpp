@@ -64,7 +64,7 @@ Prop::size_type testpropsearch
     tree.play(sizelimit);
     // Check answer
     tree.printstats();
-//if (iter->first == "pm2.21d") tree.navigate();
+if (iter->first == "mpisyl") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
@@ -90,7 +90,7 @@ Prop::size_type testpropsearch
         const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
         std::cout << "Duplicate" << std::endl;
     }
-    else if (iter->first == "ex")
+    else if (iter->first == "pm2.61d")
     {
         Printer printer(&database.typecodes());
         verifyproofsteps(tree.proof(), printer, &*iter);

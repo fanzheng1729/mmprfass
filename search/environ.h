@@ -54,11 +54,12 @@ struct Environ
     };
     // Map: goal -> Evaluation
     typedef std::map<Proofsteps, Goaldata> Goals;
-    Goals::pointer addgoal(Proofsteps const & goal, Status s = PENDING)
+    typedef Goals::pointer pGoal;
+    pGoal addgoal(Proofsteps const & goal, Status s = PENDING)
     { return &*goals.insert(Goals::value_type(goal, s)).first; }
     // Check if an expression is proven or hypothesis.
     // If so, record its proof. Return true iff okay.
-    bool done(Goals::pointer pgoal, strview typecode) const;
+    bool done(pGoal pgoal, strview typecode) const;
     // # goals of a given status
     Goals::size_type countgoal(int status) const
     {
@@ -70,27 +71,26 @@ struct Environ
     // Check if an assertion is on topic.
     virtual bool ontopic(Assertion const & ass) const { return &ass == &ass; }
     // Return the extra hypotheses of a goal.
-    virtual Bvector extrahyps(Goals::pointer pgoal) const
-    { return Bvector(pgoal - pgoal); }
+    virtual Bvector extrahyps(pGoal pgoal) const { return Bvector(pgoal?0:0); }
         // Check if a goal is valid.
     virtual bool valid(Proofsteps const & goal) const { return &goal==&goal; }
     // Check if all hypotheses of a move are valid.
     bool valid(Move const & move) const;
     // Moves generated at a given stage
     virtual Moves ourmoves(Node const & node, std::size_t stage) const;
+    // Simplify the hypotheses of our node.
+    virtual void simphyps(Node const & node) const { static_cast<void>(node); }
     // Evaluate leaf nodes, and record the proof if proven.
-    virtual Eval evalourleaf(Node const &) const;
+    virtual Eval evalourleaf(Node const & node) const;
     virtual Eval evaltheirleaf(Node const & node) const;
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address. Return NULL if unsuccessful.
-    virtual Environ * makeenv(Assiter) const {return NULL; };
-    // Return the simplified assertion for the goal of the node to hold.
-    virtual Assertion assertion(Node const &) const { return Assertion(); };
+    virtual Environ * makeenv(Assiter) const { return NULL; };
+    virtual Assertion assertion(Node const &) const { return Assertion(); }
     // Returns the label of a sub environment from a node.
-    std::string label(Node const & node, char separator = '+') const;
+    std::string label(Node const & node, char delim = '+') const;
     // Add a sub environment for the node. Return true iff it is added.
-    bool addsubenv(Node const & node, strview label);
-    bool addsubenv(Node const & node) { return addsubenv(node, label(node)); }
+    bool addsubenv(Node const & node, strview label, Assertion const & ass);
     virtual ~Environ()
     {
         FOR (Subenvs::const_reference subenv, subenvs)

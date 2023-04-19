@@ -29,19 +29,21 @@ struct Propctors : public std::map<strview, Propctor>
 // Check if data for all propositional syntax constructor are okay.
     bool okay(Definitions const & definitions = Definitions()) const;
 // Add CNF clauses from reverse Polish notation.
-// # of auxiliary atoms start from atomcount.
+// # of auxiliary atoms start from natom.
 // Return true if okay. First auxiliary atom = hyps.size()
-    bool addcnffromrPolish
-        (Proofsteps const & proofsteps, Hypiters const & hyps,
-         CNFClauses & cnf, Atom & atomcount) const;
+    bool addclause
+        (Proofsteps const & formula, Hypiters const & hyps,
+         CNFClauses & cnf, Atom & natom) const;
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
-    CNFClauses hypscnf(struct Assertion const & ass, Atom & count) const;
+    Hypscnf hypscnf(struct Assertion const & ass, Atom & natom,
+                    Bvector const & extrahyps = Bvector()) const;
 // Translate a propositional assertion to the CNF of an SAT instance.
     CNFClauses cnf
-        (struct Assertion const & ass, Proofsteps const & proofsteps) const;
+        (struct Assertion const & ass, Proofsteps const & conclusion,
+         Bvector const & extrahyps = Bvector()) const;
 // Check if an expression is valid given a propositional assertion.
     bool checkpropsat
-        (struct Assertion const & ass, Proofsteps const & proofsteps) const;
+        (struct Assertion const & ass, Proofsteps const & conclusion) const;
 private:
 // Initialize with basic propositional connectives.
     void init();

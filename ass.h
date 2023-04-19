@@ -71,12 +71,14 @@ struct Assertion
     bool istrivial(Proofsteps const & rPolish, strview typecode) const
     { return matchhyp(rPolish, typecode) < hypcount(); }
     // Remove unnecessary variables.
-    Bvector trimvars(Bvector const & extrahyps, Proofsteps const & steps) const
+    Bvector trimvars
+        (Bvector const & extrahyps, Proofsteps const & conclusion) const
     {
         Bvector result(extrahyps);
-        return trimvars(result, steps);
+        return trimvars(result, conclusion);
     }
-    Bvector & trimvars(Bvector & extrahyps, Proofsteps const & steps) const;
+    Bvector & trimvars
+        (Bvector & extrahyps, Proofsteps const & conclusion) const;
     // Length of the rev Polish notation of all necessary hypotheses combined
     Expression::size_type hypslen(Bvector const & extrahyps = Bvector()) const
     {
@@ -86,14 +88,14 @@ struct Assertion
                 * hypsrPolish[i].size();
         return len;
     }
-    // Label of all necessary hypotheses combined, separated by separator
+    // Label of all necessary hypotheses combined, separated by delim
     std::string hypslabel
-        (Bvector const & extrahyps = Bvector(), char separator = '+') const
+        (Bvector const & extrahyps = Bvector(), char delim = '+') const
     {
         std::string result;
         for (Hypsize i(0); i < hypcount(); ++i)
             if (!(i < extrahyps.size() && extrahyps[i]))
-                (result += separator) += hypiters[i]->first;
+                (result += delim) += hypiters[i]->first;
         return result;
     }
     // # of variables

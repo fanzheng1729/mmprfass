@@ -4,7 +4,7 @@
 
 // Check if a goal is proven or matches a hypothesis.
 // If so, record its proof. Return true iff okay.
-bool Environ::done(Goals::pointer pgoal, strview typecode) const
+bool Environ::done(pGoal pgoal, strview typecode) const
 {
     if (pgoal->second.status == PROVEN)
         return true; // already proven
@@ -28,19 +28,27 @@ bool Environ::valid(Move const & move) const
         if (move.isfloating(i))
             continue; // Skip floating hypothesis.
         Proofsteps const & goal(move.hyprPolish(i));
-        Goals::pointer pgoal(((Environ &)(*this)).addgoal(goal, NEW));
+        pGoal pgoal(((Environ &)(*this)).addgoal(goal, NEW));
         Status const status(pgoal->second.status);
         if (status == FALSE)
             return false; // goal checked to be false
         const_cast<Move &>(move).hypvec[i] = pgoal;
+        if (done(pgoal, move.hyptypecode(i)))
+            continue;
         if (status == PROVEN || status == PENDING)
+        {
+//std::cout << "status " << status << ' ' << pgoal << " in " << this;
+//std::cout << ' ' << pgoal->first << pgoal->second.extrahyps;
             continue; // goal checked to be true
+        }
         // New goal
         const bool okay(valid(goal));
         pgoal->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
         pgoal->second.extrahyps = extrahyps(pgoal);
+//std::cout << "added " << pgoal << " in " << this;
+//std::cout << ' ' << pgoal->first << pgoal->second.extrahyps;
     }
 //std::cout << moves;
     return true;
@@ -72,6 +80,8 @@ Moves Environ::ourmoves(Node const & node, std::size_t stage) const
 // Evaluate leaf nodes, and record the proof if proven.
 Eval Environ::evalourleaf(Node const & node) const
 {
+    if (!node.pparent && !node.pgoal->second.extrahyps.empty())
+        simphyps(node); // Only simplify non-defer moves with extra hypotheses.
     return eval(node.penv->hypslen
                 + node.pgoal->first.size()
                 + node.defercount());
@@ -86,7 +96,7 @@ Eval Environ::evaltheirleaf(Node const & node) const
     {
         if (node.attempt.isfloating(i))
             continue; // Skip floating hypothesis.
-        Goals::pointer pgoal(node.attempt.hypvec[i]);
+        pGoal pgoal(node.attempt.hypvec[i]);
         if (done(pgoal, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
         Bvector const & extrahyps(pgoal->second.extrahyps);
@@ -102,13 +112,13 @@ Eval Environ::evaltheirleaf(Node const & node) const
 }
 
 // Returns the label of a sub environment from a node.
-std::string Environ::label(Node const & node, char separator) const
+std::string Environ::label(Node const & node, char delim) const
 {
-    return m_assiter->second.hypslabel(node.pgoal->second.extrahyps, separator);
+    return m_assiter->second.hypslabel(node.pgoal->second.extrahyps, delim);
 }
 
 // Add a sub environment for the node. Return true iff it is added.
-bool Environ::addsubenv(Node const & node, strview label)
+bool Environ::addsubenv(Node const & node, strview label, Assertion const & ass)
 {
     // Node's sub environment pointer
     Environ * & penv(const_cast<Environ * &>(node.penv));
@@ -120,15 +130,15 @@ bool Environ::addsubenv(Node const & node, strview label)
         penv = enviter->second;
         return false;
     }
-//std::cout << "Adding sub environment " << label << " for " << node.pgoal->first;
-//std::cin.get();
     enviter = subenvs.insert(std::pair<strview, Environ *>(label, NULL)).first;
     // Simplified assertion
-    Assertions::value_type const value(enviter->first, assertion(node));
+    Assertions::value_type const value(enviter->first, ass);
     // Iterator to the simplified assertion
     Assiter const assiter(subassertions.insert(value).first);
     if (Environ * p = makeenv(assiter))
     {
+//std::cout << "New sub environment " << label << " at " << p << std::endl;
+//std::cin.get();
         // Point the node's environment to the sub environment.
         penv = enviter->second = p;
         // Prepare the sub environment.

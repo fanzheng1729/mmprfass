@@ -16,8 +16,7 @@ struct SearchBase : Environ, MCTS<Node>
         Environ(iter, db, static_cast<unsigned>(parameters[2]) & STAGED),
         MCTS(Node(), parameters)
     {
-        // The search works with rPolish, not expression.
-        Goals::pointer pgoal(Environ::addgoal(iter->second.exprPolish));
+        pGoal pgoal(Environ::addgoal(iter->second.exprPolish));
         // The node is copied when constructing the search tree,
         // making the pointer to parent dangling, so it must be reset.
         const_cast<Node &>(data()->game()) =
@@ -53,7 +52,7 @@ struct SearchBase : Environ, MCTS<Node>
     {
         double const value(parentval(ptr));
         if (staged && ptr->isourturn() && value == -1)
-            return evalourleaf(ptr->game()); // Current stage no valid attempt
+            return ptr->game().penv->evalourleaf(ptr->game()); // Current stage no valid attempt
         return Eval(value, std::abs(value) == 1);
     }
     // Record the proof of proven goals on back propagation.

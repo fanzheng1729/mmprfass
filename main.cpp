@@ -130,11 +130,6 @@ int main(int argc, char ** argv)
 
     double parameters[] = {0, 6e-4, 0};
 //    double parameters[] = {0, 6e-4, SearchBase::STAGED};
-//    Assiter iter(database.assertions().find("mpd"));
-//    Prop tree(iter, database, parameters);
-//    tree.play(1 << 10);
-//    std::cout << tree.proof();
-//    std::cin.get();
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
 //    std::basic_streambuf<char> * sb(std::cout.rdbuf(out.rdbuf()));

@@ -46,7 +46,7 @@ template <class T>
 bool unexpected(bool const condition, const char * const type, const T & value)
 {
     if (condition)
-        std::cerr << "Unexpected " << type << ": " << value << std::endl;
+        std::cerr << "Unexpected " << type << ": " << value << std::endl, throw 1;
 
     return condition;
 }
