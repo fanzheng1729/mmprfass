@@ -35,12 +35,12 @@ struct Prop : SearchBase
         cnf.closeoff((natom - 1) * 2 + 1);
         return !cnf.sat();
     }
-    // Return the extra hypotheses of a goal.
-    virtual Bvector extrahyps(pGoal pgoal) const
+    // Return the hypotheses of a goal to cut.
+    virtual Bvector hypstocut(pGoal pgoal) const
     {
         Assertion const & ass(m_assiter->second);
         Bvector result(ass.hypcount(), false);
-        Hypsize nextra(0); // # of extra essential hypothesis
+        Hypsize ntocut(0); // # essential hypothesis to cut
         for (Hypsize i(ass.hypcount() - 1); i != Hypsize(-1); --i)
         {
             if (ass.hypiters[i]->second.second)
@@ -48,9 +48,9 @@ struct Prop : SearchBase
             result[i] = true;
             CNFClauses const & cnf(m_database.propctors().cnf(ass, pgoal->first,
                                                               result));
-            nextra += result[i] = !cnf.sat();
+            ntocut += result[i] = !cnf.sat();
         }
-        return nextra ? ass.trimvars(result, pgoal->first) : Bvector();
+        return ntocut ? ass.trimvars(result, pgoal->first) : Bvector();
     }
     // Simplify the hypotheses of our node.
     virtual void simphyps(Node const & node) const
@@ -70,10 +70,10 @@ struct Prop : SearchBase
     virtual Assertion assertion(Node const & node) const
     {
         Assertion const & oldass(m_assiter->second);
-        Bvector const & extrahyps(node.pgoal->second.extrahyps);
+        Bvector const & hypstocut(node.pgoal->second.hypstocut);
         Assertion result;
         result.number = oldass.number;
-        result.sethyps(oldass, extrahyps);
+        result.sethyps(oldass, hypstocut);
         result.expression.resize(1);
         result.disjvars = oldass.disjvars & result.varsused;
         return result;

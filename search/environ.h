@@ -50,7 +50,7 @@ struct Environ
         Goaldata(Status s = PENDING, Proofsteps const & steps = Proofsteps()) :
             status(s), proofsteps(steps) {}
         // Unnecessary hypothesis of the goal
-        Bvector extrahyps;
+        Bvector hypstocut;
     };
     // Map: goal -> Evaluation
     typedef std::map<Proofsteps, Goaldata> Goals;
@@ -70,9 +70,9 @@ struct Environ
     }
     // Check if an assertion is on topic.
     virtual bool ontopic(Assertion const & ass) const { return &ass == &ass; }
-    // Return the extra hypotheses of a goal.
-    virtual Bvector extrahyps(pGoal pgoal) const { return Bvector(pgoal?0:0); }
-        // Check if a goal is valid.
+    // Return the hypotheses of a goal to cut.
+    virtual Bvector hypstocut(pGoal pgoal) const { return Bvector(pgoal?0:0); }
+    // Check if a goal is valid.
     virtual bool valid(Proofsteps const & goal) const { return &goal==&goal; }
     // Check if all hypotheses of a move are valid.
     bool valid(Move const & move) const;

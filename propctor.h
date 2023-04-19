@@ -36,11 +36,11 @@ struct Propctors : public std::map<strview, Propctor>
          CNFClauses & cnf, Atom & natom) const;
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
     Hypscnf hypscnf(struct Assertion const & ass, Atom & natom,
-                    Bvector const & extrahyps = Bvector()) const;
+                    Bvector const & hypstocut = Bvector()) const;
 // Translate a propositional assertion to the CNF of an SAT instance.
     CNFClauses cnf
         (struct Assertion const & ass, Proofsteps const & conclusion,
-         Bvector const & extrahyps = Bvector()) const;
+         Bvector const & hypstocut = Bvector()) const;
 // Check if an expression is valid given a propositional assertion.
     bool checkpropsat
         (struct Assertion const & ass, Proofsteps const & conclusion) const;

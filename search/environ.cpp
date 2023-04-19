@@ -38,7 +38,7 @@ bool Environ::valid(Move const & move) const
         if (status == PROVEN || status == PENDING)
         {
 //std::cout << "status " << status << ' ' << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.extrahyps;
+//std::cout << ' ' << pgoal->first << pgoal->second.hypstocut;
             continue; // goal checked to be true
         }
         // New goal
@@ -46,9 +46,9 @@ bool Environ::valid(Move const & move) const
         pgoal->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
-        pgoal->second.extrahyps = extrahyps(pgoal);
+        pgoal->second.hypstocut = hypstocut(pgoal);
 //std::cout << "added " << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.extrahyps;
+//std::cout << ' ' << pgoal->first << pgoal->second.hypstocut;
     }
 //std::cout << moves;
     return true;
@@ -80,8 +80,8 @@ Moves Environ::ourmoves(Node const & node, std::size_t stage) const
 // Evaluate leaf nodes, and record the proof if proven.
 Eval Environ::evalourleaf(Node const & node) const
 {
-    if (!node.pparent && !node.pgoal->second.extrahyps.empty())
-        simphyps(node); // Only simplify non-defer moves with extra hypotheses.
+    if (!node.pparent && !node.pgoal->second.hypstocut.empty())
+        simphyps(node); // Only simplify non-defer moves with hypotheses to cut.
     return eval(node.penv->hypslen
                 + node.pgoal->first.size()
                 + node.defercount());
@@ -99,9 +99,9 @@ Eval Environ::evaltheirleaf(Node const & node) const
         pGoal pgoal(node.attempt.hypvec[i]);
         if (done(pgoal, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
-        Bvector const & extrahyps(pgoal->second.extrahyps);
-        Proofsize const newhypslen(extrahyps.empty() ? hypslen :
-                                   m_assiter->second.hypslen(extrahyps));
+        Bvector const & hypstocut(pgoal->second.hypstocut);
+        Proofsize const newhypslen(hypstocut.empty() ? hypslen :
+                                   m_assiter->second.hypslen(hypstocut));
         double const neweval(score(newhypslen + pgoal->first.size()));
         if (neweval < eval)
             eval = neweval;
@@ -114,7 +114,7 @@ Eval Environ::evaltheirleaf(Node const & node) const
 // Returns the label of a sub environment from a node.
 std::string Environ::label(Node const & node, char delim) const
 {
-    return m_assiter->second.hypslabel(node.pgoal->second.extrahyps, delim);
+    return m_assiter->second.hypslabel(node.pgoal->second.hypstocut, delim);
 }
 
 // Add a sub environment for the node. Return true iff it is added.

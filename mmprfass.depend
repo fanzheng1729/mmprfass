@@ -699,7 +699,7 @@
 	"proof/analyze.h"
 	"syntaxiom.h"
 
-1681936551 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
+1681938288 c:\users\elitebook\downloads\metamath\mmprfass\ass.h
 	"proof/analyze.h"
 
 1671289362 c:\users\elitebook\downloads\metamath\mmprfass\vars.h
@@ -750,7 +750,7 @@
 	"io.h"
 	"strview.h"
 
-1681929314 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1681937980 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -1211,13 +1211,13 @@
 1679842092 c:\users\elitebook\downloads\metamath\mmprfass\search\gen.h
 	"../proof/step.h"
 
-1681907945 c:\users\elitebook\downloads\metamath\mmprfass\propctor.h
+1681938190 c:\users\elitebook\downloads\metamath\mmprfass\propctor.h
 	<iosfwd>
 	"cnf.h"
 	"def.h"
 	"proof/step.h"
 
-1681907966 source:c:\users\elitebook\downloads\metamath\mmprfass\propctor.cpp
+1681938190 source:c:\users\elitebook\downloads\metamath\mmprfass\propctor.cpp
 	<algorithm>
 	<limits>
 	"proof/analyze.h"
@@ -1240,7 +1240,7 @@
 	"../util/progress.h"
 	"../util/timer.h"
 
-1681937990 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1681938399 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../disjvars.h"
@@ -1273,7 +1273,7 @@
 	"base.h"
 	"io.h"
 
-1681936622 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+1681938400 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
 	"../database.h"
 	"../proof/step.h"
 	"../util/for.h"
