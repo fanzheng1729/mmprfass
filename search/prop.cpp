@@ -92,10 +92,10 @@ Prop::size_type testpropsearch
     }
     else if (iter->first == "pm2.61d")
     {
-        Printer printer(&database.typecodes());
-        verifyproofsteps(tree.proof(), printer, &*iter);
-        std::cout << printer.str();
-        std::cin.get();
+//        Printer printer(&database.typecodes());
+//        verifyproofsteps(tree.proof(), printer, &*iter);
+//        std::cout << printer.str();
+//        std::cin.get();
     }
 
     return tree.size();
