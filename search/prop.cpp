@@ -64,7 +64,7 @@ Prop::size_type testpropsearch
     tree.play(sizelimit);
     // Check answer
     tree.printstats();
-if (iter->first == "mpisyl") tree.navigate();
+//if (iter->first == "mpisyl") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
