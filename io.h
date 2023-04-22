@@ -59,4 +59,13 @@ void printass(Assref const & assref, std::size_t count = 0)
     printass(assref.second, assref.first, count);
 }
 
+// Ask a question and get its answer.
+inline std::string ask(const char * question)
+{
+    std::string answer;
+    std::cout << question;
+    std::cin >> answer;
+    return answer;
+}
+
 #endif // IO_H_INCLUDED

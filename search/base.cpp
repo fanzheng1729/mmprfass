@@ -245,14 +245,6 @@ void SearchBase::printstats() const
     std::cout << countenvs() << " contexts" << std::endl;
 }
 
-static std::string ask(const char * question)
-{
-    std::string answer;
-    std::cout << question;
-    std::cin >> answer;
-    return answer;
-}
-
 static SearchBase::Nodeptr moveup(SearchBase::Nodeptr ptr)
 {
     ptr = ptr.parent();
@@ -274,7 +266,6 @@ static SearchBase::Nodeptr findourchild
 {
     if (!ptr)
         return ptr;
-
     FOR (SearchBase::Nodeptr child, *ptr.children())
     {
         if (child->game().attempt.pass->first != ass)
@@ -287,6 +278,9 @@ static SearchBase::Nodeptr findourchild
 
 static SearchBase::Nodeptr gotoourchild(SearchBase::Nodeptr ptr)
 {
+    if (!ptr || ptr.children()->empty())
+        return SearchBase::Nodeptr();
+
     std::string token;
     std::cin >> token;
     if (token == "*")
@@ -300,12 +294,18 @@ static SearchBase::Nodeptr gotoourchild(SearchBase::Nodeptr ptr)
     if (SearchBase::Nodeptr child = onlyopenchild(ptr))
         if (ask("Go to only open child y/n?")[0] == 'y')
             ptr = child;
+
     return ptr;
 }
 
 void SearchBase::navigate(bool detailed) const
 {
-    help();
+    std::cout <<
+    "For our turn, c [label] [n] changes to the n-th node using the assertion "
+    "[label]\nc * changes to the last node\n"
+    "For their turn, c [n] changes to the n-th hypothesis\n"
+    "u[p] goes up a level\nh[ome] or t[op] goes to the top level\n"
+    "b[ye] or e[xit] or q[uit] to leave navigation\n";
 
     std::string token;
     Nodeptr ptr(data());
@@ -314,8 +314,6 @@ void SearchBase::navigate(bool detailed) const
 //std::cout << ptr->isourturn() << &*ptr << std::endl;
         std::cin.clear();
         std::cin >> token;
-        if (token.empty())
-            continue;
         char const init(token[0]);
         if (init == 'b' || init == 'e' || init == 'q')
             return;
@@ -324,27 +322,8 @@ void SearchBase::navigate(bool detailed) const
         else if (init == 'h' || init == 't')
             printmainline(ptr = data(), detailed);
         else if (init == 'c')
-        {
-            if (!ptr->isourturn())
-            {
-                printmainline(ptr = gototheirchild(ptr), detailed);
-                continue;
-            }
-            // our turn
-            if (ptr.children()->empty())
-                break;
-            printmainline(ptr = gotoourchild(ptr), detailed);
-        }
+            printmainline(ptr = ptr->isourturn() ? gotoourchild(ptr) :
+                          gototheirchild(ptr), detailed);
     }
     std::cout << std::string(50, '-') << std::endl;
-}
-
-void SearchBase::help()
-{
-    std::cout <<
-    "For our turn, c [label] [n] changes to the n-th node using the assertion "
-    "[label]\nc * changes to the last node\n"
-    "For their turn, c [n] changes to the n-th hypothesis\n"
-    "u[p] goes up a level\nh[ome] or t[op] goes to the top level\n"
-    "b[ye] or e[xit] or q[uit] to leave navigation\n";
 }

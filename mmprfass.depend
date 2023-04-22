@@ -637,7 +637,7 @@
 	<iterator>
 	<set>
 
-1681910203 c:\users\elitebook\downloads\metamath\mmprfass\io.h
+1682188904 c:\users\elitebook\downloads\metamath\mmprfass\io.h
 	<algorithm>
 	<iostream>
 	<iterator>
@@ -1234,7 +1234,7 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1682187562 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1682188308 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
@@ -1261,7 +1261,7 @@
 	<vector>
 	"../util/for.h"
 
-1682182551 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
+1682189039 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
 	"environ.h"
 	"../MCTS/MCTS.h"
 	"node.h"

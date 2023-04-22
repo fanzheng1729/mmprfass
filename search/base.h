@@ -74,7 +74,6 @@ struct SearchBase : Environ, MCTS<Node>
     { printmainline(data(), detailed); }
     void printstats() const;
     void navigate(bool detailed = true) const;
-    static void help();
     virtual ~SearchBase() {}
 };
 
