@@ -2,7 +2,6 @@
 #define MOVE_H_INCLUDED
 
 #include <iostream>
-#include "../ass.h"
 #include "environ.h"
 #include "../proof/verify.h"
 

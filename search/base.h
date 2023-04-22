@@ -4,8 +4,6 @@
 #include "environ.h"
 #include "../MCTS/MCTS.h"
 #include "node.h"
-#include "../typecode.h"
-#include "../util/filter.h"
 
 // Proof search tree base class, implementing loop detection
 struct SearchBase : Environ, MCTS<Node>

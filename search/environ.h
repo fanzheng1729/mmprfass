@@ -2,7 +2,6 @@
 #define ENVIRON_H_INCLUDED
 
 #include "../database.h"
-#include "../proof/step.h"
 #include "../util/for.h"
 
 // Move in proof search tree
