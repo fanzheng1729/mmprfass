@@ -122,13 +122,6 @@ int main(int argc, char ** argv)
     if (!database.checkpropassertion())
         return EXIT_FAILURE;
 
-    Assertion const & ass(database.assertions().find("a2i")->second);
-    Proofsteps steps(ass.exprPolish);
-    steps[0] = steps[1] = steps[4];
-    CNFClauses const& cnf(database.propctors().cnf(ass, steps));
-    if (!cnf.sat())
-        return EXIT_FAILURE;
-
     double parameters[] = {0, 1e-3, 0};
 //    double parameters[] = {0, 6e-4, SearchBase::STAGED};
 //Uncomment the next two lines if you want to output to a file.

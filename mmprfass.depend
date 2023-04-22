@@ -750,7 +750,7 @@
 	"io.h"
 	"strview.h"
 
-1682187572 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1682190638 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -1234,7 +1234,7 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1682188308 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1682190925 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
@@ -1268,7 +1268,7 @@
 	"../typecode.h"
 	"../util/filter.h"
 
-1682182551 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
+1682189557 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
 	"base.h"
 	"io.h"
 

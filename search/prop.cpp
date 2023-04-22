@@ -151,6 +151,9 @@ bool testpropsearch
     for (Assiters::size_type i(1); i < assiters.size(); ++i)
     {
         Assiter iter(assiters[i]);
+//        Assiter iter1 = database.assertions().find("biass");
+//        iter = database.assertions().find("biluk");
+//        const_cast<Assertion &>(iter->second).number = iter1->second.number+1;
         if (iter->second.type & Assertion::AXIOM)
             continue; // Skip axioms.
         if (!((Prop *)0)->Prop::ontopic(iter->second))
