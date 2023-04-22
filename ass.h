@@ -72,31 +72,21 @@ struct Assertion
     { return matchhyp(rPolish, typecode) < hypcount(); }
     // Remove unnecessary variables.
     Bvector trimvars
-        (Bvector const & hypstocut, Proofsteps const & conclusion) const
+        (Bvector const & hypstotrim, Proofsteps const & conclusion) const
     {
-        Bvector result(hypstocut);
+        Bvector result(hypstotrim);
         return trimvars(result, conclusion);
     }
     Bvector & trimvars
-        (Bvector & hypstocut, Proofsteps const & conclusion) const;
+        (Bvector & hypstotrim, Proofsteps const & conclusion) const;
     // Length of the rev Polish notation of all necessary hypotheses combined
-    Expression::size_type hypslen(Bvector const & hypstocut = Bvector()) const
+    Expression::size_type hypslen(Bvector const & hypstotrim = Bvector()) const
     {
         Expression::size_type len(0);
         for (Hypsize i(0); i < hypcount(); ++i)
-            len += !(i < hypstocut.size() && hypstocut[i])
+            len += !(i < hypstotrim.size() && hypstotrim[i])
                 * hypsrPolish[i].size();
         return len;
-    }
-    // Label of all necessary hypotheses combined, separated by delim
-    std::string hypslabel
-        (Bvector const & hypstocut = Bvector(), char delim = '+') const
-    {
-        std::string result;
-        for (Hypsize i(0); i < hypcount(); ++i)
-            if (!(i < hypstocut.size() && hypstocut[i]))
-                (result += delim) += hypiters[i]->first;
-        return result;
     }
     // # of variables
     Varsused::size_type varcount() const { return varsused.size(); }
@@ -110,8 +100,8 @@ struct Assertion
     // Otherwise return NULL.
     const char * match(const int pattern[]) const;
 // Modifying functions
-    // Set the hypotheses, cutting away specified ones.
-    void sethyps(Assertion const & ass, Bvector const & hypstocut = Bvector());
+    // Set the hypotheses, trimming away specified ones.
+    void sethyps(Assertion const & ass, Bvector const & hypstotrim = Bvector());
 };
 
 // Find the equivalence relations and their justifications among syntax axioms.

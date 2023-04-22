@@ -28,18 +28,18 @@ static bool treeassertionref
     (Assertion const & assertion, std::vector<Proofsize> & stack,
      Prooftree::reference step)
 {
-    typedef std::vector<Proofsize>::size_type Stacksize;
-
-    Stacksize const hypcount(assertion.hypcount());
+    Hypsize const hypcount(assertion.hypcount());
     if (!enoughitemonstack(hypcount, stack.size(), ""))
         return false;
 
-    Stacksize const base(stack.size() - hypcount);
-    Proofsize const indx(stack.empty() ? 0 : stack.back() + 1);
+    Prooftreehyps::size_type const base(stack.size() - hypcount);
+    Proofsize const index(stack.empty() ? 0 : stack.back() + 1);
     step.assign(stack.begin() + base, stack.end());
-    // Remove hypotheses from stack
+    // Remove hypotheses from stack.
     stack.erase(stack.begin() + base, stack.end());
-    stack.push_back(indx);
+    // Add conclusion to stack.
+    stack.push_back(index);
+
     return true;
 }
 
@@ -75,6 +75,37 @@ static Treeiter subproofbegins(Treeiter iter)
     while (!iter->empty())
         iter -= iter->back() - iter->front() + 1;
     return iter;
+}
+
+// Return the indentations of all the proofs in a proof tree.
+static void indentation(Treeiter begin, Treeiter end,
+                        std::vector<Proofsize> & result)
+{
+    // Iterator to root of subtree
+    Treeiter const back(end - 1);
+    if (back->empty())
+        return;
+    // Index and level of root
+    Proofsize const index(back->back() + 1), level(result[index]);
+    for (Prooftreehyps::size_type i(0); i < back->size(); ++i)
+    {
+        // Index of root of sub tree
+        Proofsize const subroot((*back)[i]);
+        // Indent one more level.
+        result[subroot] = level + 1;
+        // Recurse to the subtree.
+        Treeiter const newend(end - (index - subroot));
+        Treeiter const newbegin(i == 0 ? begin :
+                                end - (index - (*back)[i - 1]));
+        indentation(newbegin, newend, result);
+    }
+}
+std::vector<Proofsize> indentation(Prooftree const & tree)
+{
+    std::vector<Proofsize> result(tree.size());
+    if (!tree.empty())
+        indentation(tree.begin(), tree.end(), result);
+    return result;
 }
 
 // Split a proof for all nodes found in splitters from the root.

@@ -10,22 +10,22 @@ struct Printer
     // Check if the printer is on.
     operator bool() const { return ptypes; }
     // Add a proof step.
-    bool addstep(Proofstep step, Expression const & stacktop)
-    { return !*this || doaddstep(step, stacktop); }
+    bool addstep(Proofstep step, Proofsize index, Expression const & stacktop)
+    { return !*this || doaddstep(step, index, stacktop); }
     // Return proof string for std::cout.
-    std::string str() const;
+    std::string str(std::vector<Proofsize> const & indentation) const;
 private:
     struct Typecodes const * ptypes;
     // # saved steps
     std::vector<Expression>::size_type savecount;
     // Stack of essential steps
     std::vector<std::vector<Expression>::size_type> stack;
-    // List of (justification, indent level, tag #, expression)
+    // List of (justification, tag #, index, expression)
     std::vector<Expression> steps;
     // Add a proof step.
-    bool doaddstep(Proofstep step, Expression const & stacktop);
-    bool addstep(Expression const & stacktop,
-                 strview label = "", std::size_t level = 0, Symbol2 save = Symbol2());
+    bool doaddstep(Proofstep step, Proofsize index, Expression const & stacktop);
+    bool addstep(Expression const & stacktop, Proofsize index,
+                 strview label = "", Symbol2 save = Symbol2());
 };
 
 #endif // PRINTER_H_INCLUDED

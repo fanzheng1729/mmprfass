@@ -4,8 +4,8 @@
 #include "../util/arith.h"
 #include "verify.h"
 
-bool Printer::addstep(Expression const & stacktop,
-                      strview label, std::size_t level, Symbol2 save)
+bool Printer::addstep(Expression const & stacktop, Proofsize index,
+                      strview label, Symbol2 save)
 {
     if (stacktop.empty())
         return false;
@@ -19,51 +19,32 @@ bool Printer::addstep(Expression const & stacktop,
 
     Expression & dest(steps.back());
     dest[0] = label;
-    dest[1].id = level;
-    dest[2] = save;
+    dest[1] = save;
+    dest[2].id = index;
     std::copy(stacktop.begin(), stacktop.end(), dest.begin() + 3);
 
     return true;
 }
 
-bool Printer::doaddstep(Proofstep step, Expression const & stacktop)
+bool Printer::doaddstep(Proofstep step, Proofsize index, Expression const & stacktop)
 {
 //std::cout << "Step " << step << ", top of stack: " << stacktop;
     switch (step.type)
     {
     case Proofstep::HYP:
-        return addstep(stacktop, step.phyp->first);
+        return addstep(stacktop, index, step.phyp->first);
     case Proofstep::ASS:
         {
             Assertion const & ass(step.pass->second);
             Hypsize const esscount(ass.esshypcount());
             if (!enoughitemonstack(esscount, stack.size(), ""))
                 return false;
-            // Indent all the essential hypotheses.
-            std::size_t maxlevel(0);
-            if (esscount > 0)
-            {
-                // Find the maximal level of hypotheses.
-                for (Hypsize i(0); i < esscount; ++i)
-                {
-                    std::size_t level(steps[stack[stack.size() - 1 - i]][1].id);
-                    maxlevel = std::max(maxlevel, level);
-                }
-                // Promote all hypotheses to the maximal level.
-                for (Hypsize i(0); i < esscount; ++i)
-                {
-                    steps[stack[stack.size() - 1 - i]][1].id = maxlevel;
-//std::cout << stack[stack.size() - 1 - i] << '=' << maxlevel << ' ';
-                }
-//std::cout << std::endl;
-                // Pop all the essential hypotheses.
-                stack.resize(stack.size() - esscount);
-            }
-            return addstep(stacktop, step.pass->first,
-                           (esscount > 0) * (maxlevel + 1));
+            // Pop all the essential hypotheses.
+            stack.resize(stack.size() - esscount);
+            return addstep(stacktop, index, step.pass->first);
         }
     case Proofstep::LOAD:
-        return addstep(stacktop, "", 0, Symbol2("<=", step.index + 1));
+        return addstep(stacktop, index, "", Symbol2("<=", step.index + 1));
     case Proofstep::SAVE:
         if (stacktop.empty())
             return false;
@@ -76,23 +57,19 @@ bool Printer::doaddstep(Proofstep step, Expression const & stacktop)
     return false;
 }
 
-std::string Printer::str() const
+std::string Printer::str(std::vector<Proofsize> const & indentation) const
 {
-    if (steps.empty())
-        return "";
     std::string result;
-    // Level of the conclusion
-    std::size_t const maxlevel(steps.back()[1]);
     FOR (Expression const & step, steps)
     {
         // Justification + indentation + expression + tag #
-        (result += strview(step[0])) += "\t";
-        result += std::string(maxlevel - step[1], ' ');
+        (result += strview(step[0])) += '\t';
+        result += std::string(indentation[step[2]], ' ');
         for (Expression::size_type i(3); i < step.size(); ++i)
-            (result += strview(step[i])) += " ";
-        if (step[2] == "<=" || step[2] == ">=")
-            ((result += strview(step[2])) += " ") += util::hex(step[2].id);
-        result += "\n";
+            (result += strview(step[i])) += ' ';
+        if (!step[1].empty())
+            ((result += strview(step[1])) += ' ') += util::hex(step[2].id);
+        result += '\n';
     }
 
     return result;

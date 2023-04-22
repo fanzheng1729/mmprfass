@@ -38,7 +38,7 @@ bool Environ::valid(Move const & move) const
         if (status == PROVEN || status == PENDING)
         {
 //std::cout << "status " << status << ' ' << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.hypstocut;
+//std::cout << ' ' << pgoal->first << pgoal->second.hypstotrim;
             continue; // goal checked to be true
         }
         // New goal
@@ -46,9 +46,9 @@ bool Environ::valid(Move const & move) const
         pgoal->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
-        pgoal->second.hypstocut = hypstocut(pgoal);
+        pgoal->second.hypstotrim = hypstotrim(pgoal);
 //std::cout << "added " << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.hypstocut;
+//std::cout << ' ' << pgoal->first << pgoal->second.hypstotrim;
     }
 //std::cout << moves;
     return true;
@@ -61,6 +61,7 @@ Moves Environ::ourmoves(Node const & node, std::size_t stage) const
     Prooftree tree(prooftree(node.pgoal->first));
     Moves moves;
 //std::cout << "Finding moves for " << node;
+//std::cout << "stage " << stage << std::endl;
     for (Assiters::size_type i
          (1); i < m_assiter->second.number && i < assvec.size(); ++i)
     {
@@ -73,15 +74,15 @@ Moves Environ::ourmoves(Node const & node, std::size_t stage) const
             if (tryassertion(node.goal(), tree, iter, stage, moves))
                 break; // Move closes the goal.
     }
-//std::cout << moves;
+//std::cout << "Context " << moves.size() << std::endl;
     return moves;
 }
 
 // Evaluate leaf nodes, and record the proof if proven.
 Eval Environ::evalourleaf(Node const & node) const
 {
-    if (!node.pparent && !node.pgoal->second.hypstocut.empty())
-        simphyps(node); // Only simplify non-defer moves with hypotheses to cut.
+    if (!node.pparent && !node.pgoal->second.hypstotrim.empty())
+        trimhyps(node); // Only for non-defer moves with hypotheses to trim
     return eval(node.penv->hypslen
                 + node.pgoal->first.size()
                 + node.defercount());
@@ -99,9 +100,9 @@ Eval Environ::evaltheirleaf(Node const & node) const
         pGoal pgoal(node.attempt.hypvec[i]);
         if (done(pgoal, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
-        Bvector const & hypstocut(pgoal->second.hypstocut);
-        Proofsize const newhypslen(hypstocut.empty() ? hypslen :
-                                   m_assiter->second.hypslen(hypstocut));
+        Bvector const & hypstotrim(pgoal->second.hypstotrim);
+        Proofsize const newhypslen(hypstotrim.empty() ? hypslen :
+                                   m_assiter->second.hypslen(hypstotrim));
         double const neweval(score(newhypslen + pgoal->first.size()));
         if (neweval < eval)
             eval = neweval;
@@ -111,34 +112,43 @@ Eval Environ::evaltheirleaf(Node const & node) const
     return Eval(eval, eval == 1);
 }
 
-// Returns the label of a sub environment from a node.
-std::string Environ::label(Node const & node, char delim) const
+// Returns a label for a collection of hypotheses.
+static std::string hypslabel(Hypiters const & hypiters, Bvector const & hypstotrim)
 {
-    return m_assiter->second.hypslabel(node.pgoal->second.hypstocut, delim);
+    static const std::string delim("+");
+    std::vector<std::string> labels;
+    for (Hypsize i(0); i < hypiters.size(); ++i)
+        if (!(i < hypstotrim.size() && hypstotrim[i]))
+            labels.push_back(delim + std::string(hypiters[i]->first));
+
+    std::sort(labels.begin(), labels.end());
+    std::string result;
+    FOR (std::string const & label, labels)
+        result += label;
+    return result;
 }
 
 // Add a sub environment for the node. Return true iff it is added.
-bool Environ::addsubenv(Node const & node, strview label, Assertion const & ass)
+bool Environ::addsubenv(Node const & node)
 {
     // Node's sub environment pointer
     Environ * & penv(const_cast<Environ * &>(node.penv));
+    std::string label(hypslabel(penv->m_assiter->second.hypiters,
+                                node.pgoal->second.hypstotrim));
     // Find if the sub environment named label already exists.
     Subenvs::iterator enviter(subenvs.find(label));
+    // If so, point the node's sub environment pointer to it.
     if (enviter != subenvs.end())
-    {
-        // Yes. Point the node's sub environment pointer to it.
-        penv = enviter->second;
-        return false;
-    }
+        return penv = enviter->second, false;
+
     enviter = subenvs.insert(std::pair<strview, Environ *>(label, NULL)).first;
     // Simplified assertion
-    Assertions::value_type const value(enviter->first, ass);
+    Assertions::value_type value(enviter->first, node.penv->makeass(node));
     // Iterator to the simplified assertion
     Assiter const assiter(subassertions.insert(value).first);
     if (Environ * p = makeenv(assiter))
     {
-//std::cout << "New sub environment " << label << " at " << p << std::endl;
-//std::cin.get();
+//std::cout << node.goal().expression() << "in context " << label << std::endl;
         // Point the node's environment to the sub environment.
         penv = enviter->second = p;
         // Prepare the sub environment.
@@ -211,7 +221,7 @@ bool Environ::tryassertion
 //std::cout << "Trying " << iter->first << " with " << goal.expression();
     Subprfsteps subprfsteps;
     prealloc(subprfsteps, ass.varsused);
-    if (!findsubstitutions(*goal.prPolish, tree, ass.exprPolish, ass.exptree,
+    if (!findsubstitutions(goal.prPolish, tree, ass.exprPolish, ass.exptree,
                            subprfsteps))
         return false; // Conclusion mismatch
     // Bound substitutions

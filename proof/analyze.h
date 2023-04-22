@@ -20,6 +20,9 @@ bool isonestep(Proofsteps const & steps);
 // Return empty tree if not okay.
 Prooftree prooftree(Proofsteps const & steps);
 
+// Return the indentations of all the proofs in a proof tree.
+std::vector<Proofsize> indentation(Prooftree const & tree);
+
 // Split a proof for all nodes found in splitters from the root.
 // Add to subproofs and return the simplified proof.
 Proof splitproof

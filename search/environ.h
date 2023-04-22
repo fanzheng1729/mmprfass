@@ -50,11 +50,13 @@ struct Environ
         Goaldata(Status s = PENDING, Proofsteps const & steps = Proofsteps()) :
             status(s), proofsteps(steps) {}
         // Unnecessary hypothesis of the goal
-        Bvector hypstocut;
+        Bvector hypstotrim;
     };
     // Map: goal -> Evaluation
     typedef std::map<Proofsteps, Goaldata> Goals;
     typedef Goals::pointer pGoal;
+    // Map: name -> polymorphic sub environments
+    typedef std::map<std::string, Environ *> Subenvs;
     pGoal addgoal(Proofsteps const & goal, Status s = PENDING)
     { return &*goals.insert(Goals::value_type(goal, s)).first; }
     // Check if an expression is proven or hypothesis.
@@ -66,31 +68,34 @@ struct Environ
         Goals::size_type n(0);
         FOR (Goals::const_reference goal, goals)
             n += (goal.second == status);
+        FOR (Subenvs::const_reference subenv, subenvs)
+            n += subenv.second->countgoal(status);
         return n;
     }
+    // # sub environments
+    Subenvs::size_type countenvs() const { return subenvs.size() + 1; }
     // Check if an assertion is on topic.
     virtual bool ontopic(Assertion const & ass) const { return &ass == &ass; }
-    // Return the hypotheses of a goal to cut.
-    virtual Bvector hypstocut(pGoal pgoal) const { return Bvector(pgoal?0:0); }
+    // Return the hypotheses of a goal to be trimmed.
+    virtual Bvector hypstotrim(pGoal pgoal) const { return Bvector(pgoal?0:0); }
     // Check if a goal is valid.
     virtual bool valid(Proofsteps const & goal) const { return &goal==&goal; }
     // Check if all hypotheses of a move are valid.
     bool valid(Move const & move) const;
     // Moves generated at a given stage
     virtual Moves ourmoves(Node const & node, std::size_t stage) const;
-    // Simplify the hypotheses of our node.
-    virtual void simphyps(Node const & node) const { static_cast<void>(node); }
+    // Trim the hypotheses of our node.
+    virtual void trimhyps(Node const & node) const { static_cast<void>(node); }
     // Evaluate leaf nodes, and record the proof if proven.
     virtual Eval evalourleaf(Node const & node) const;
     virtual Eval evaltheirleaf(Node const & node) const;
     // Allocate a new sub environment constructed from a sub assertion on the heap.
     // Return its address. Return NULL if unsuccessful.
     virtual Environ * makeenv(Assiter) const { return NULL; };
-    virtual Assertion assertion(Node const &) const { return Assertion(); }
-    // Returns the label of a sub environment from a node.
-    std::string label(Node const & node, char delim = '+') const;
+    // Return the simplified assertion for the goal of the node to hold.
+    virtual Assertion makeass(Node const &) const { return Assertion(); }
     // Add a sub environment for the node. Return true iff it is added.
-    bool addsubenv(Node const & node, strview label, Assertion const & ass);
+    bool addsubenv(Node const & node);
     virtual ~Environ()
     {
         FOR (Subenvs::const_reference subenv, subenvs)
@@ -111,7 +116,6 @@ private:
     // Assertions corresponding to sub environments
     Assertions subassertions;
     // Polymorphic sub environments
-    typedef std::map<std::string, Environ *> Subenvs;
     Subenvs subenvs;
     // Add a move with no free variables.
     // Return true iff a move closes the goal.

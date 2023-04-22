@@ -16,6 +16,8 @@ struct SearchBase : Environ, MCTS<Node>
         Environ(iter, db, static_cast<unsigned>(parameters[2]) & STAGED),
         MCTS(Node(), parameters)
     {
+        if (iter->second.expression.empty())
+            return;
         pGoal pgoal(Environ::addgoal(iter->second.exprPolish));
         // The node is copied when constructing the search tree,
         // making the pointer to parent dangling, so it must be reset.
@@ -40,13 +42,11 @@ struct SearchBase : Environ, MCTS<Node>
     virtual Eval evalleaf(Nodeptr ptr) const
     {
         Node const & node(ptr->game());
-        bool makesloop(SearchBase::Nodeptr ptr);
-        if (makesloop(ptr))
-            return Eval(-1, true);
-        if (ptr->isourturn() && done(node.pgoal, node.typecode))
-            return Eval(1, true);
-        return ptr->isourturn() ? node.penv->evalourleaf(node) :
-            node.penv->evaltheirleaf(node);
+        bool loopsback(SearchBase::Nodeptr ptr);
+        return loopsback(ptr) ? Eval(-1, true) :
+            ptr->isourturn() && done(node.pgoal, node.typecode) ? Eval(1, true) :
+                ptr->isourturn() ? node.penv->evalourleaf(node) :
+                    node.penv->evaltheirleaf(node);
     }
     virtual Eval evalparent(Nodeptr ptr) const
     {
@@ -69,10 +69,9 @@ struct SearchBase : Environ, MCTS<Node>
         return data()->game().pgoal->second.proofsteps;
     }
     // Printing routines. DO NOTHING if ptr is NULL.
-    void printmainline(Nodeptr ptr, bool detailed = true) const;
-    void printmainline(bool detailed = true) const
+    void printmainline(Nodeptr ptr, bool detailed = false) const;
+    void printmainline(bool detailed = false) const
     { printmainline(data(), detailed); }
-    void printfulltree() const;
     void printstats() const;
     void navigate(bool detailed = true) const;
     static void help();

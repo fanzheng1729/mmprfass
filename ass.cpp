@@ -4,11 +4,11 @@
 
 // Remove unnecessary variables.
 Bvector & Assertion::trimvars
-    (Bvector & hypstocut, Proofsteps const & conclusion) const
+    (Bvector & hypstotrim, Proofsteps const & conclusion) const
 {
 //std::cout << conclusion;
-    hypstocut.resize(hypcount());
-    hypstocut.flip();
+    hypstotrim.resize(hypcount());
+    hypstotrim.flip();
     for (Hypsize i(0); i < hypcount(); ++i)
     {
         Hypothesis const & hyp(hypiters[i]->second);
@@ -19,15 +19,15 @@ Bvector & Assertion::trimvars
 //std::cout << "use of " << hyp.first[1] << ' ';
         Hypsize j(hypcount() - 1);
         for ( ; j != Hypsize(-1); --j)
-            if (hypstocut[j] && usage[j])
+            if (hypstotrim[j] && usage[j])
                 break;
 //std::cout << j << ' ';
-        hypstocut[i] = (j != Hypsize(-1) ||
+        hypstotrim[i] = (j != Hypsize(-1) ||
                         util::filter(conclusion)(hypiters[i]->first.c_str));
     }
-    hypstocut.flip();
-//std::cout << hypstocut;
-    return hypstocut;
+    hypstotrim.flip();
+//std::cout << hypstotrim;
+    return hypstotrim;
 }
 
 // If rPolish of the expression matches a given pattern,
@@ -78,16 +78,16 @@ const char * Assertion::match(const int pattern[]) const
     return exprPolish.back();
 }
 
-// Set the hypotheses, cutting away specified ones.
-void Assertion::sethyps(Assertion const & ass, Bvector const & hypstocut)
+// Set the hypotheses, trimming away specified ones.
+void Assertion::sethyps(Assertion const & ass, Bvector const & hypstotrim)
 {
-    if (hypstocut.empty())
+    if (hypstotrim.empty())
         return;
     hypiters.clear(), hypsrPolish.clear(), hypstree.clear();
     varsused.clear();
     for (Hypsize i(0); i < ass.hypcount(); ++i)
     {
-        if (i < hypstocut.size() && hypstocut[i])
+        if (i < hypstotrim.size() && hypstotrim[i])
             continue;
         // *iter is used.
         Hypiter const iter(ass.hypiters[i]);
@@ -99,7 +99,7 @@ void Assertion::sethyps(Assertion const & ass, Bvector const & hypstocut)
             Bvector & usage(varsused[var]);
             Bvector const & assusage(ass.varsused.at(var));
             for (Hypsize j(0); j < ass.hypcount(); ++j)
-                if (!hypstocut[j])
+                if (!hypstotrim[j])
                     usage.push_back(assusage[j]);
         }
         hypsrPolish.push_back(ass.hypsrPolish[i]);

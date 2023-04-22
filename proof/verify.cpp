@@ -151,7 +151,7 @@ Expression verifyproofsteps(Proofsteps const & steps,
 
     Substitutions substitutions;
 
-    FOR (Proofstep step, steps)
+    FOR (Proofstep const & step, steps)
     {
         switch (step.type)
         {
@@ -185,7 +185,7 @@ Expression verifyproofsteps(Proofsteps const & steps,
             printinproofof(thlabel);
             return Expression();
         }
-        if (!printer.addstep(step, stack.back()))
+        if (!printer.addstep(step, &step - &steps[0], stack.back()))
             return Expression();
     }
 

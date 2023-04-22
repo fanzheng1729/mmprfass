@@ -35,27 +35,12 @@ struct Prop : SearchBase
         cnf.closeoff((natom - 1) * 2 + 1);
         return !cnf.sat();
     }
-    // Return the hypotheses of a goal to cut.
-    virtual Bvector hypstocut(pGoal pgoal) const
+    // Return the hypotheses of a goal to trim.
+    virtual Bvector hypstotrim(pGoal pgoal) const;
+    // Trim the hypotheses of our node.
+    virtual void trimhyps(Node const & node) const
     {
-        Assertion const & ass(m_assiter->second);
-        Bvector result(ass.hypcount(), false);
-        Hypsize ntocut(0); // # essential hypothesis to cut
-        for (Hypsize i(ass.hypcount() - 1); i != Hypsize(-1); --i)
-        {
-            if (ass.hypiters[i]->second.second)
-                continue; // Skip floating hypothesis.
-            result[i] = true;
-            CNFClauses const & cnf(m_database.propctors().cnf(ass, pgoal->first,
-                                                              result));
-            ntocut += result[i] = !cnf.sat();
-        }
-        return ntocut ? ass.trimvars(result, pgoal->first) : Bvector();
-    }
-    // Simplify the hypotheses of our node.
-    virtual void simphyps(Node const & node) const
-    {
-        if (node.penv0->addsubenv(node, label(node), assertion(node)))
+        if (node.penv0->addsubenv(node))
             static_cast<SearchBase *>(node.penv)->clear();
     }
     // Allocate a new sub environment constructed from a sub assertion on the heap.
@@ -67,13 +52,13 @@ struct Prop : SearchBase
         return new(std::nothrow) Prop(iter, m_database, param);
     }
     // Return the simplified assertion for the goal of the node to hold.
-    virtual Assertion assertion(Node const & node) const
+    virtual Assertion makeass(Node const & node) const
     {
         Assertion const & oldass(m_assiter->second);
-        Bvector const & hypstocut(node.pgoal->second.hypstocut);
+        Bvector const & hypstotrim(node.pgoal->second.hypstotrim);
         Assertion result;
         result.number = oldass.number;
-        result.sethyps(oldass, hypstocut);
+        result.sethyps(oldass, hypstotrim);
         result.expression.resize(1);
         result.disjvars = oldass.disjvars & result.varsused;
         return result;

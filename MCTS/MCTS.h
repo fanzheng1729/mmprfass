@@ -151,8 +151,7 @@ public:
     // UCB threshold for generating a new batch of moves
     // Change this to turn on staged move generation.
     virtual double UCBnewstage(Nodeptr ptr) const
-    { return ptr->isourturn() ? -std::numeric_limits<double>::max() :
-        std::numeric_limits<double>::max(); }
+    { return (1 - 2 * ptr->isourturn()) * std::numeric_limits<double>::max(); }
     // Return the unsure child with largest UCB.
     // Return NULL if there is no such a child.
     Nodeptr pickchild(Nodeptr ptr) const
@@ -304,6 +303,7 @@ private:
     // ptr should != NULL.
     bool addchildren(Nodeptr ptr, Moves const & moves)
     {
+//std::cout << "Adding " << moves.size() << " nodes to " << *ptr;
         FOR (typename Moves::const_reference move, moves)
         {
             // Copy node to child.
@@ -320,12 +320,14 @@ private:
     // ptr should != NULL.
     bool doexpand(Nodeptr ptr, Moves (Game::*)(bool) const)
     {
+//std::cout << "finding legal moves for " << *ptr;
         return ptr->stage++ > 0 ? false :
             addchildren(ptr, ptr->legalmoves(ptr->isourturn()));
     }
     template<class T>
     bool doexpand(Nodeptr ptr, Moves (Game::*)(bool, T) const)
     {
+//std::cout << "finding legal moves for " << *ptr;
         return addchildren(ptr, ptr->legalmoves(ptr->isourturn(),
                                                 ptr->m_stage++));
     }

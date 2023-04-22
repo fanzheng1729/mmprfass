@@ -9,16 +9,16 @@
 // Proof goal
 struct Goal
 {
-    Proofsteps const * prPolish;
+    Proofsteps const & prPolish;
     strview typecode;
     Expression expression() const
     {
-        Expression result(verifyproofsteps(*prPolish));
+        Expression result(verifyproofsteps(prPolish));
         if (!result.empty()) result[0] = typecode;
         return result;
     }
     operator==(Goal other) const
-    { return prPolish == other.prPolish && typecode == other.typecode; }
+    { return &prPolish == &other.prPolish && typecode == other.typecode; }
 };
 
 // Node in proof search tree
@@ -29,13 +29,18 @@ struct Node
     // Pointer to rev Polish of expression to be proved
     Environ::pGoal pgoal;
     strview typecode;
-    Goal goal() const { Goal goal = {&pgoal->first, typecode}; return goal; }
+    Goal goal() const { Goal goal = {pgoal->first, typecode}; return goal; }
     // Pointer to the parent, if our turn and node is deferred
     Node const * pparent;
     // Proof attempt made, if not our turn
     Move attempt;
     // Essential hypotheses needed, if not our turn
-    std::set<Environ::pGoal> hypset;
+    struct Compgoal : std::less<Environ::pGoal>
+    {
+//        bool operator()(Environ::pGoal p, Environ::pGoal q) const
+//        { return p->first < q->first; }
+    };
+    std::set<Environ::pGoal, Compgoal> hypset;
     // Pointer to the current and initial environments
     Environ *penv, *penv0;
     Node() : pgoal(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
@@ -54,8 +59,7 @@ struct Node
     }
     friend std::ostream & operator<<(std::ostream & out, Node const & node)
     {
-        Goal goal = {&node.pgoal->first, node.typecode};
-        out << goal.expression();
+        out << node.goal().expression();
         if (node.attempt.type != Move::NONE)
             out << "Proof attempt (" << node.defercount() << ") "
                 << node.attempt << std::endl;
@@ -72,14 +76,19 @@ struct Node
     bool operator>=(Node const & node) const
     {
         return std::includes(hypset.begin(), hypset.end(),
-                             node.hypset.begin(), node.hypset.end());
+                             node.hypset.begin(), node.hypset.end(), Compgoal());
     }
     // Play a move.
     bool play(Move const & move, bool const isourturn)
     {
         if (isourturn)
         {
-            // Record the move
+            // Verify the move.
+            if (move.type == Move::ASS)
+                if (pgoal->first != move.exprPolish() ||
+                    typecode != move.exptypecode())
+                    return false;
+            // Record the move.
             attempt = move;
             return true;
         }
@@ -88,10 +97,6 @@ struct Node
         switch (lastmove.type)
         {
         case Move::ASS:
-            // Verify the move.
-            if (pgoal->first != lastmove.exprPolish() ||
-                typecode != lastmove.exptypecode())
-                return false;
             // Pick the hypothesis.
             pgoal = lastmove.hypvec[move.index];
             typecode = lastmove.hyptypecode(move.index);
@@ -99,7 +104,6 @@ struct Node
             return true;
         case Move::DEFER:
             pparent = pparent->pparent;
-//std::cout << "node @ " << this << " in " << penv << ' ' << pparent << '\n';
             return true;
         default: // Empty move
             return false;
@@ -122,7 +126,6 @@ struct Node
     {
         if (penv->done(pgoal, typecode))
             return Moves();
-//std::cout << "stage " << stage << std::endl;
         if (penv->staged)
             return penv->ourmoves(*this, stage);
 
@@ -152,7 +155,8 @@ struct Node
         // The whose proof
         pgoal->second.status = Environ::PROVEN;
         ::writeproof(pgoal->second.proofsteps, attempt.pass, hyps);
-//std::cout << "Written proof\n" << pgoal->first << pgoal->second.proofsteps;
+//std::cout << penv << " proves " << goal().expression();
+//std::cout << pgoal->second.proofsteps;
     }
 };
 

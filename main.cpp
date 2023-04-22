@@ -56,20 +56,21 @@ int main(int argc, char ** argv)
     if (testsat2(8) != 0)
         return EXIT_FAILURE;
 
-/*
-    std::cout << "Checking DAG" << std::endl;
-    if (!testDAG(8))
-        return EXIT_FAILURE;
-    std::cout << "Testing MTCS" << std::endl;
-    double const exploration[] = {1, 1};
-    if (!testMCTS(1 << 20, exploration))
-        return EXIT_FAILURE;
-*/
+//    std::cout << "Checking DAG" << std::endl;
+//    if (!testDAG(8))
+//        return EXIT_FAILURE;
+//    std::cout << "Testing MTCS" << std::endl;
+//    double const exploration[] = {1, 1};
+//    if (!testMCTS(1 << 20, exploration))
+//        return EXIT_FAILURE;
+
     Tokens tokens;
     Comments comments;
     std::cout << "Reading file" << std::endl;
     Timer timer;
-#include "read.h"
+    // Read tokens. Returns true iff okay.
+    bool read(const char * const filename,
+              Tokens & tokens, Comments & comments);
     if (!read(argv[1], tokens, comments))
         return EXIT_FAILURE;
     std::cout << "done in " << timer << 's' << std::endl;
@@ -133,7 +134,7 @@ int main(int argc, char ** argv)
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
 //    std::basic_streambuf<char> * sb(std::cout.rdbuf(out.rdbuf()));
-    if (!testpropsearch(database, 1 << 10, parameters))
+    if (!testpropsearch(database, 4 << 10, parameters))
         return EXIT_FAILURE;
 //Also please uncomment this line, or you will get a segmentation fault.
 //    std::cout.rdbuf(sb);

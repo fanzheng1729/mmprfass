@@ -2,7 +2,7 @@
 #include "io.h"
 
 // Check if goal appears as the goal of ptr or its ancestors.
-static bool makesloop(Goal goal, SearchBase::Nodeptr ptr)
+static bool loopsback(Goal goal, SearchBase::Nodeptr ptr)
 {
     if (!ptr->isourturn())
         ptr = ptr.parent();
@@ -15,26 +15,53 @@ static bool makesloop(Goal goal, SearchBase::Nodeptr ptr)
     return false;
 }
 
-// Check if ptr is no easier than any children of ancestor.
-static bool makesloop(SearchBase::Nodeptr ptr, SearchBase::Nodeptr ancestor)
+// Return the only open child of a node. Return NULL if it does not exist.
+SearchBase::Nodeptr onlyopenchild(SearchBase::Nodeptr ptr)
 {
+    if (!ptr || ptr->isourturn())
+        return SearchBase::Nodeptr();
+
+    bool hasopenchild(false);
+    SearchBase::Nodeptr result;
+    FOR (SearchBase::Nodeptr child, *ptr.children())
+    {
+        if (child->eval().first == 1)
+            continue;
+        // Open child found.
+        if (hasopenchild)
+            return SearchBase::Nodeptr(); // 2 open children
+        hasopenchild = true;
+        result = child;
+    }
+
+    return result;
+}
+
+// Check if ptr is no easier than any children of ancestor.
+static bool loopsback(SearchBase::Nodeptr ptr, SearchBase::Nodeptr ancestor)
+{
+    if (ancestor->game().pparent)
+        return false; // Quadratic runtime, only use when ancestor is not deferred.
     Node const & node(ptr->game());
     FOR (SearchBase::Nodeptr child, *ancestor.children())
     {
-        Node const & sibling(child->game());
-        if (sibling.attempt.type != Move::ASS || child->eval().first == -1)
-            continue; // sibling invalid
-        if (child.parent() == ptr.parent() &&
-            !sibling.attempt.hypvec.empty() && sibling.hypset.empty())
-            continue; // brother not checked
-        if (&node != &sibling && node >= sibling)
+        Node const & game(child->game());
+        if (game.attempt.type != Move::ASS || child->eval().first == -1)
+            continue; // attempt invalid
+        if (ancestor == ptr.parent())
+            if ((!game.attempt.hypvec.empty() && game.hypset.empty()))
+                continue; // attempt not checked
+        if (&node != &game && node >= game)
             return true;
+        if (SearchBase::Nodeptr cousin = onlyopenchild(child))
+            if (loopsback(ptr, cousin))
+                return true;
     }
     return false;
 }
 
 // Check if ptr duplicates upstream goals.
-bool makesloop(SearchBase::Nodeptr ptr)
+bool loopsback(SearchBase::Nodeptr ptr)
 {
     Move const & move(ptr->game().attempt);
     if (move.type != Move::ASS)
@@ -46,15 +73,15 @@ bool makesloop(SearchBase::Nodeptr ptr)
     {
         if (move.isfloating(i))
             continue; // Skip floating hypotheses.
-        Goal goal = {&move.hypvec[i]->first, move.hyptypecode(i)};
-        if (makesloop(goal, ptr.parent()))
+        Goal goal = {move.hypvec[i]->first, move.hyptypecode(i)};
+        if (loopsback(goal, ptr.parent()))
             return true;
     }
     // Check if this node is harder than a parent node.
     SearchBase::Nodeptr ancestor(ptr.parent());
     while (true)
     {
-        if (makesloop(ptr, ancestor))
+        if (loopsback(ptr, ancestor))
             return true;
         // Move up.
         if (!ancestor.parent())
@@ -64,17 +91,23 @@ bool makesloop(SearchBase::Nodeptr ptr)
     return false;
 }
 
-// Format: ax-mp or DEFER(n)
-static void printattempt(Node const & node)
+// Format: ax-mp[!]
+static void printrefname(SearchBase::Nodeptr ptr)
 {
-    Move const & move(node.attempt);
-    switch (move.type)
+    std::cout << ptr->game().attempt.pass->first;
+    if (onlyopenchild(ptr)) std::cout << '!';
+}
+
+// Format: ax-mp[!] or DEFER(n)
+static void printattempt(SearchBase::Nodeptr ptr)
+{
+    switch (ptr->game().attempt.type)
     {
     case Move::DEFER :
-        std::cout << "DEFER(" << node.defercount() << ')';
+        std::cout << "DEFER(" << ptr->game().defercount() << ')';
         break;
     case Move::ASS :
-        std::cout << move.pass->first;
+        printrefname(ptr);
         break;
     default :
         std::cout << "NONE";
@@ -95,7 +128,7 @@ static void printourchildren(SearchBase::Nodeptr ptr, SearchBase const & base)
 {
     FOR (SearchBase::Nodeptr child, *ptr.children())
     {
-        printattempt(child->game());
+        printattempt(child);
         printeval(child, base);
     }
     std::cout << std::endl;
@@ -108,14 +141,14 @@ static void printournode(SearchBase::Nodeptr ptr)
     strview typecode(ptr->game().typecode);
     Hypsize i(lastmove.matchhyp(steps, typecode));
     strview hyp(lastmove.pass->second.hypiters[i]->first);
-    Goal goal = {&steps, typecode};
+    Goal goal = {steps, typecode};
     std::cout << hyp, printeval(ptr), std::cout << '\t' << goal.expression();
 }
 
 // Format: DEFER(n) score*size
 static void printdeferline(SearchBase::Nodeptr ptr)
 {
-    printattempt(ptr->game());
+    printattempt(ptr);
     if (!ptr.children()->empty())
         printeval((*ptr.children())[0]);
     std::cout << std::endl;
@@ -134,10 +167,11 @@ static void printhypsline(SearchBase::Nodeptr ptr)
     }
     std::cout << std::endl;
 }
-// Format: ax-mp score*size score*size
+// Format: ax-mp[!] score*size score*size
 static void printtheirnode(SearchBase::Nodeptr ptr)
 {
     std::cout << ptr->game().attempt.pass->first;
+    if (onlyopenchild(ptr)) std::cout << '!';
     FOR (SearchBase::Nodeptr child, *ptr.children())
         printeval(child);
     std::cout << std::endl;
@@ -147,8 +181,7 @@ static void printtheirnode(SearchBase::Nodeptr ptr)
 static void printgoal(SearchBase::Nodeptr ptr)
 {
     std::cout << "Goal " << ptr->eval().first << ' ';
-    Proofsteps const & steps(ptr->game().pgoal->first);
-    Goal goal = {&steps, ptr->game().typecode};
+    Goal goal = {ptr->game().pgoal->first, ptr->game().typecode};
     std::cout << goal.expression();
 }
 
@@ -158,7 +191,7 @@ static void printgoal(SearchBase::Nodeptr ptr)
  | DEFER(n) score*size OR
  | min score*size maj score*size
 **/
-// n.   ax-mp score*size score*size
+// n.   ax-mp[!] score*size score*size
 //      maj score*size  |- ...
 /**
  | ax-mp score*size=UCB ...
@@ -196,34 +229,44 @@ void SearchBase::printmainline(Nodeptr ptr, bool detailed) const
         }
         else if (!ptr->game().pparent)
         {
-            std::cout << '\t', printournode(ptr);
-            if (detailed)
-                printourchildren(ptr, *this);
+            std::cout << '\t';
+            printournode(ptr);
         }
     }
 }
 
-static void printfulltree(SearchBase::Nodeptr ptr, SearchBase::size_type level)
-{
-    if (!ptr) return;
-    std::cout << std::string(level, ' ') << *ptr;
-    FOR (SearchBase::Nodeptr child, *ptr.children())
-        printfulltree(child, level + 1);
-}
-void SearchBase::printfulltree() const
-{
-    ::printfulltree(data(), 0);
-    std::cout << std::string(50, '-') << std::endl;
-}
-
-// Format: n nodes, x proven, y pending, z false\n
+// Format: n nodes, x V, y ?, z X in m contests
 void SearchBase::printstats() const
 {
-    static const char * const s[] = {" proven, ", " pending, ", " false"};
+    static const char * const s[] = {" V, ", " ?, ", " X in "};
     std::cout << size() << " nodes, ";
     for (int i(1); i >= -1; --i)
         std::cout << countgoal(i) << s[1 - i];
-    std::cout << std::endl;
+    std::cout << countenvs() << " contexts" << std::endl;
+}
+
+static std::string ask(const char * question)
+{
+    std::string answer;
+    std::cout << question;
+    std::cin >> answer;
+    return answer;
+}
+
+static SearchBase::Nodeptr moveup(SearchBase::Nodeptr ptr)
+{
+    ptr = ptr.parent();
+    if (onlyopenchild(ptr))
+        if (ask("Go to grandparent y/n?")[0] == 'y')
+            ptr = ptr.parent();
+    return ptr;
+}
+
+static SearchBase::Nodeptr gototheirchild(SearchBase::Nodeptr ptr)
+{
+    SearchBase::size_type i;
+    std::cin >> i;
+    return (*ptr.children())[i];
 }
 
 static SearchBase::Nodeptr findourchild
@@ -240,6 +283,24 @@ static SearchBase::Nodeptr findourchild
             return child;
     }
     return SearchBase::Nodeptr();
+}
+
+static SearchBase::Nodeptr gotoourchild(SearchBase::Nodeptr ptr)
+{
+    std::string token;
+    std::cin >> token;
+    if (token == "*")
+        ptr = ptr.children()->back();
+    else
+    {
+        SearchBase::size_type i;
+        std::cin >> i;
+        ptr = findourchild(ptr, token, i);
+    }
+    if (SearchBase::Nodeptr child = onlyopenchild(ptr))
+        if (ask("Go to only open child y/n?")[0] == 'y')
+            ptr = child;
+    return ptr;
 }
 
 void SearchBase::navigate(bool detailed) const
@@ -259,34 +320,20 @@ void SearchBase::navigate(bool detailed) const
         if (init == 'b' || init == 'e' || init == 'q')
             return;
         if (init == 'u')
-            printmainline(ptr = ptr.parent(), detailed);
+            printmainline(ptr = moveup(ptr), detailed);
         else if (init == 'h' || init == 't')
             printmainline(ptr = data(), detailed);
         else if (init == 'c')
         {
             if (!ptr->isourturn())
             {
-                size_type i;
-                std::cin >> i;
-                Children const & children(*ptr.children());
-                printmainline(ptr = children[i], detailed);
+                printmainline(ptr = gototheirchild(ptr), detailed);
                 continue;
             }
             // our turn
-            Children const & children(*ptr.children());
-            if (children.empty())
+            if (ptr.children()->empty())
                 break;
-
-            std::cin >> token;
-            if (token == "*")
-                printmainline(ptr = children.back(), detailed);
-            else
-            {
-                size_type i;
-                std::cin >> i;
-                printmainline(ptr = findourchild(ptr, token, i), detailed);
-//std::cout << ptr->isourturn() << &*ptr << std::endl;
-            }
+            printmainline(ptr = gotoourchild(ptr), detailed);
         }
     }
     std::cout << std::string(50, '-') << std::endl;

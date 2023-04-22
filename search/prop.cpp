@@ -2,6 +2,40 @@
 #include "../util/progress.h"
 #include "../util/timer.h"
 
+// Return the hypotheses of a goal to trim.
+Bvector Prop::hypstotrim(pGoal pgoal) const
+{
+    Assertion const & ass(m_assiter->second);
+    Bvector result(ass.hypcount(), false);
+    Hypsize ntotrim(0); // # essential hypothesis to trim
+    for (Hypsize i(ass.hypcount() - 1); i != Hypsize(-1); --i)
+    {
+        if (ass.hypiters[i]->second.second)
+            continue; // Skip floating hypotheses.
+        // Try to trim the i-th hypothesis.
+        result[i] = true;
+        // Check if it can be trimmed.
+        CNFClauses cnf2;
+        std::vector<CNFClauses::size_type> const & ends(hypscnf.second);
+        // Add hypotheses.
+        for (Hypsize j(0); j < ass.hypcount(); ++j)
+        {
+            if (ass.hypiters[j]->second.second || result[j])
+                continue; // Skip floating or unnecessary hypotheses.
+            CNFClauses::size_type begin(j > 0 ? ends[j - 1] : 0), end(ends[j]);
+            cnf2.insert(cnf2.end(), &hypscnf.first[begin], &hypscnf.first[end]);
+        }
+//        std::cout << "hypcnf\n" << hypscnf.first << "cnf\n" << cnf2;
+        Atom natom(cnf2.empty() ? ass.hypcount() : cnf2.atomcount());
+        // Add conclusion.
+        m_database.propctors().addclause(pgoal->first, ass.hypiters, cnf2, natom);
+        // Negate conclusion.
+        cnf2.closeoff((natom - 1) * 2 + 1);
+        ntotrim += result[i] = !cnf2.sat();
+    }
+    return ntotrim ? ass.trimvars(result, pgoal->first) : Bvector();
+}
+
 // Adds substitutions to a move.
 struct Substadder : Adder
 {
@@ -64,17 +98,17 @@ Prop::size_type testpropsearch
     tree.play(sizelimit);
     // Check answer
     tree.printstats();
-//if (iter->first == "mpisyl") tree.navigate();
+if (iter->first == "exp") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
-//        tree.printmainline(false);
+//        tree.printmainline();
 //        tree.navigate();
     }
     else if (tree.value() != 1)
     {
         std::cerr << "Prop search test failed\n";
-        tree.printmainline(false);
+        tree.printmainline();
         return 0;
     }
     else if (!provesrightthing(iter->first,
@@ -90,12 +124,12 @@ Prop::size_type testpropsearch
         const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
         std::cout << "Duplicate" << std::endl;
     }
-    else if (iter->first == "pm2.61d")
+    else if (iter->first == "exp")
     {
-//        Printer printer(&database.typecodes());
-//        verifyproofsteps(tree.proof(), printer, &*iter);
-//        std::cout << printer.str();
-//        std::cin.get();
+        Printer printer(&database.typecodes());
+        verifyproofsteps(tree.proof(), printer, &*iter);
+        std::cout << printer.str(indentation(prooftree(tree.proof())));
+        tree.navigate();
     }
 
     return tree.size();

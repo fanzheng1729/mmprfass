@@ -253,7 +253,7 @@ bool Propctors::addclause
 
 // Translate the hypotheses of a propositional assertion to the CNF of an SAT.
 Hypscnf Propctors::hypscnf(struct Assertion const & ass, Atom & natom,
-                           Bvector const & hypstocut) const
+                           Bvector const & hypstotrim) const
 {
     Hypiters const & hyps(ass.hypiters);
     natom = hyps.size(); // One atom for each floating hypotheses
@@ -264,7 +264,7 @@ Hypscnf Propctors::hypscnf(struct Assertion const & ass, Atom & natom,
 //std::cout << "Adding clauses for ";
     for (Hypsize i(0); i < hyps.size(); ++i)
     {
-        if (!hyps[i]->second.second && !(i < hypstocut.size() && hypstocut[i]))
+        if (!hyps[i]->second.second && !(i<hypstotrim.size() && hypstotrim[i]))
         {
 //std::cout << hyps[i]->first << ' ' << std::endl;
             if (!addclause(ass.hypsrPolish[i], hyps, cnf, natom))
@@ -280,11 +280,11 @@ Hypscnf Propctors::hypscnf(struct Assertion const & ass, Atom & natom,
 // Translate a propositional assertion to the CNF of an SAT instance.
 CNFClauses Propctors::cnf
     (struct Assertion const & ass, Proofsteps const & conclusion,
-     Bvector const & hypstocut) const
+     Bvector const & hypstotrim) const
 {
     // Add hypotheses.
     Atom natom(0);
-    CNFClauses cnf(hypscnf(ass, natom, hypstocut).first);
+    CNFClauses cnf(hypscnf(ass, natom, hypstotrim).first);
     // Add conclusion.
     if (!addclause(conclusion, ass.hypiters, cnf, natom))
         return CNFClauses();
