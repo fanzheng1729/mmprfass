@@ -713,7 +713,7 @@
 	<vector>
 	"strview.h"
 
-1680096323 c:\users\elitebook\downloads\metamath\mmprfass\proof\step.h
+1682263898 c:\users\elitebook\downloads\metamath\mmprfass\proof\step.h
 	"../proof.h"
 
 1672594522 c:\users\elitebook\downloads\metamath\mmprfass\defn.h
@@ -750,7 +750,7 @@
 	"io.h"
 	"strview.h"
 
-1682194410 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1682270649 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -869,7 +869,7 @@
 	"../proof.h"
 	"verify.h"
 
-1682022134 c:\users\elitebook\downloads\metamath\mmprfass\mcts\mcts.h
+1682270952 c:\users\elitebook\downloads\metamath\mmprfass\mcts\mcts.h
 	<algorithm>
 	<cmath>
 	<iostream>
@@ -1087,11 +1087,11 @@
 	<vector>
 	<deque>
 
-1671908325 c:\users\elitebook\downloads\metamath\mmprfass\mcts\nimsearch.h
+1671911925 c:\users\elitebook\downloads\metamath\mmprfass\mcts\nimsearch.h
 	"MCTS.h"
 	"nim.h"
 
-1671883513 c:\users\elitebook\downloads\metamath\mmprfass\mcts\nim.h
+1671887113 c:\users\elitebook\downloads\metamath\mmprfass\mcts\nim.h
 	<cstddef>
 	<functional>
 	<numeric>
@@ -1132,20 +1132,20 @@
 	"util/progress.h"
 	"util/timer.h"
 
-1672936883 source:c:\users\elitebook\downloads\metamath\mmprfass\mcts\test.cpp
+1682269154 source:c:\users\elitebook\downloads\metamath\mmprfass\mcts\test.cpp
 	<iostream>
 	"MCTS.h"
 	"nimsearch.h"
 	"gomsearch.h"
-	"../search/dummy.h"
 
-1671908531 c:\users\elitebook\downloads\metamath\mmprfass\mcts\gomsearch.h
+1682270270 c:\users\elitebook\downloads\metamath\mmprfass\mcts\gomsearch.h
 	<algorithm>
 	"MCTS.h"
 	"gom.h"
 	"../util.h"
+	"../util/for.h"
 
-1636298548 c:\users\elitebook\downloads\metamath\mmprfass\mcts\gom.h
+1636302148 c:\users\elitebook\downloads\metamath\mmprfass\mcts\gom.h
 	<algorithm>
 	<iostream>
 	<utility>
@@ -1191,7 +1191,7 @@
 	"../util/filter.h"
 	"../util/iter.h"
 
-1682171663 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
+1682263551 c:\users\elitebook\downloads\metamath\mmprfass\search\node.h
 	<algorithm>
 	"../io.h"
 	"../util/iter.h"
@@ -1234,21 +1234,21 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1682195774 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1682249260 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
 
-1682007740 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
+1682249275 c:\users\elitebook\downloads\metamath\mmprfass\search\prop.h
 	"base.h"
 	"../cnf.h"
 	"../disjvars.h"
 	"gen.h"
 
-1682196300 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
+1682263504 c:\users\elitebook\downloads\metamath\mmprfass\search\move.h
 	<iostream>
-	"environ.h"
-	"../proof/verify.h"
+	"../ass.h"
+	"goal.h"
 
 1674252006 source:c:\users\elitebook\downloads\metamath\mmprfass\mcdags\test.cpp
 	"DAG.h"
@@ -1260,22 +1260,22 @@
 	<vector>
 	"../util/for.h"
 
-1682196131 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
+1682249047 c:\users\elitebook\downloads\metamath\mmprfass\search\base.h
 	"environ.h"
 	"../MCTS/MCTS.h"
 	"node.h"
 
-1682189557 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
+1682268794 source:c:\users\elitebook\downloads\metamath\mmprfass\search\base.cpp
 	"base.h"
 	"io.h"
 
-1682196172 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
+1682263462 c:\users\elitebook\downloads\metamath\mmprfass\search\environ.h
 	"../database.h"
 	"../util/for.h"
+	"goal.h"
 
-1682110155 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
+1682263613 source:c:\users\elitebook\downloads\metamath\mmprfass\search\environ.cpp
 	"environ.h"
-	"move.h"
 	"node.h"
 
 1682187604 c:\users\elitebook\downloads\metamath\mmprfass\proof\printer.h
@@ -1292,4 +1292,7 @@
 	<map>
 	<utility>
 	"strview.h"
+
+1682263466 c:\users\elitebook\downloads\metamath\mmprfass\search\goal.h
+	"../proof/verify.h"
 

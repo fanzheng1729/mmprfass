@@ -3,6 +3,7 @@
 
 #include "../database.h"
 #include "../util/for.h"
+#include "goal.h"
 
 // Move in proof search tree
 struct Move;
@@ -10,8 +11,6 @@ struct Move;
 typedef std::vector<Move> Moves;
 // Node in proof search tree
 struct Node;
-// Proof goal
-struct Goal;
 
 inline const void * stepptr(Proofstep step)
 {
@@ -37,36 +36,19 @@ struct Environ
     Environ(Assiter iter, Database const & database, bool isstaged = false) :
         m_database(database),
         staged(isstaged), hypslen(iter->second.hypslen()), m_assiter(iter) {}
-    // Proof status of a goal
-    enum Status {PROVEN = 1, PENDING = 0, FALSE = -1, NEW = -2};
-    // Data associated with the goal
-    struct Goaldata
-    {
-        Status status;
-        operator Status() const { return status; }
-        // Proof of the expression
-        Proofsteps proofsteps;
-        Goaldata(Status s = PENDING, Proofsteps const & steps = Proofsteps()) :
-            status(s), proofsteps(steps) {}
-        // Unnecessary hypothesis of the goal
-        Bvector hypstotrim;
-    };
-    // Map: goal -> Evaluation
-    typedef std::map<Proofsteps, Goaldata> Goals;
-    typedef Goals::pointer pGoal;
     // Map: name -> polymorphic sub environments
     typedef std::map<std::string, Environ *> Subenvs;
-    pGoal addgoal(Proofsteps const & goal, Status s = PENDING)
+    Goalptr addgoal(Proofsteps const & goal, Goalstatus s = PENDING)
     { return &*goals.insert(Goals::value_type(goal, s)).first; }
     // Check if an expression is proven or hypothesis.
     // If so, record its proof. Return true iff okay.
-    bool done(pGoal pgoal, strview typecode) const;
+    bool done(Goalptr goalptr, strview typecode) const;
     // # goals of a given status
     Goals::size_type countgoal(int status) const
     {
         Goals::size_type n(0);
         FOR (Goals::const_reference goal, goals)
-            n += (goal.second == status);
+            n += (goal.second.status == status);
         FOR (Subenvs::const_reference subenv, subenvs)
             n += subenv.second->countgoal(status);
         return n;
@@ -76,7 +58,7 @@ struct Environ
     // Check if an assertion is on topic.
     virtual bool ontopic(Assertion const & ass) const { return &ass == &ass; }
     // Return the hypotheses of a goal to be trimmed.
-    virtual Bvector hypstotrim(pGoal pgoal) const { return Bvector(pgoal?0:0); }
+    virtual Bvector hypstotrim(Goalptr p) const { return Bvector(p ? 0 : 0); }
     // Check if a goal is valid.
     virtual bool valid(Proofsteps const & goal) const { return &goal==&goal; }
     // Check if all hypotheses of a move are valid.

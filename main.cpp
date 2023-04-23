@@ -59,6 +59,7 @@ int main(int argc, char ** argv)
 //    std::cout << "Checking DAG" << std::endl;
 //    if (!testDAG(8))
 //        return EXIT_FAILURE;
+
 //    std::cout << "Testing MTCS" << std::endl;
 //    double const exploration[] = {1, 1};
 //    if (!testMCTS(1 << 20, exploration))
@@ -123,7 +124,7 @@ int main(int argc, char ** argv)
         return EXIT_FAILURE;
 
     double parameters[] = {0, 1e-3, 0};
-//    double parameters[] = {0, 6e-4, SearchBase::STAGED};
+//    parameters[2] = SearchBase::STAGED;
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
 //    std::basic_streambuf<char> * sb(std::cout.rdbuf(out.rdbuf()));

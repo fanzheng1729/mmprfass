@@ -36,7 +36,7 @@ struct Prop : SearchBase
         return !cnf.sat();
     }
     // Return the hypotheses of a goal to trim.
-    virtual Bvector hypstotrim(pGoal pgoal) const;
+    virtual Bvector hypstotrim(Goalptr goalptr) const;
     // Trim the hypotheses of our node.
     virtual void trimhyps(Node const & node) const
     {
@@ -55,7 +55,7 @@ struct Prop : SearchBase
     virtual Assertion makeass(Node const & node) const
     {
         Assertion const & oldass(m_assiter->second);
-        Bvector const & hypstotrim(node.pgoal->second.hypstotrim);
+        Bvector const & hypstotrim(node.goalptr->second.hypstotrim);
         Assertion result;
         result.number = oldass.number;
         result.sethyps(oldass, hypstotrim);

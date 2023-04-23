@@ -1,54 +1,53 @@
 #include "environ.h"
-#include "move.h"
 #include "node.h"
 
 // Check if a goal is proven or matches a hypothesis.
 // If so, record its proof. Return true iff okay.
-bool Environ::done(pGoal pgoal, strview typecode) const
+bool Environ::done(Goalptr goalptr, strview typecode) const
 {
-    if (pgoal->second.status == PROVEN)
+    if (goalptr->second.status == PROVEN)
         return true; // already proven
     // Check if the goal matches a hypothesis.
     Assertion const & ass(m_assiter->second);
-    Hypsize const i(ass.matchhyp(pgoal->first, typecode));
+    Hypsize const i(ass.matchhyp(goalptr->first, typecode));
     if (i == ass.hypcount())
         return false;
     // The whose proof (1 step)
-    pgoal->second.status = PROVEN;
-    pgoal->second.proofsteps.assign(1, ass.hypiters[i]);
+    goalptr->second.status = PROVEN;
+    goalptr->second.proofsteps.assign(1, ass.hypiters[i]);
     return true;
 }
 
 // Check if all hypotheses of a move are valid.
 bool Environ::valid(Move const & move) const
 {
-    const_cast<Move &>(move).hypvec.assign(move.hypcount(), NULL);
+    move.hypvec.assign(move.hypcount(), NULL);
     for (Hypsize i(0); i < move.hypcount(); ++i)
     {
         if (move.isfloating(i))
             continue; // Skip floating hypothesis.
         Proofsteps const & goal(move.hyprPolish(i));
-        pGoal pgoal(((Environ &)(*this)).addgoal(goal, NEW));
-        Status const status(pgoal->second.status);
+        Goalptr goalptr(((Environ &)(*this)).addgoal(goal, NEW));
+        Goalstatus const status(goalptr->second.status);
         if (status == FALSE)
             return false; // goal checked to be false
-        const_cast<Move &>(move).hypvec[i] = pgoal;
-        if (done(pgoal, move.hyptypecode(i)))
+        move.hypvec[i] = goalptr;
+        if (done(goalptr, move.hyptypecode(i)))
             continue;
         if (status == PROVEN || status == PENDING)
         {
-//std::cout << "status " << status << ' ' << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.hypstotrim;
+//std::cout << "status " << status << ' ' << goalptr << " in " << this;
+//std::cout << ' ' << goalptr->first << goalptr->second.hypstotrim;
             continue; // goal checked to be true
         }
         // New goal
         const bool okay(valid(goal));
-        pgoal->second.status = okay ? PENDING : FALSE;
+        goalptr->second.status = okay ? PENDING : FALSE;
         if (!okay) // Invalid goal found
             return false;
-        pgoal->second.hypstotrim = hypstotrim(pgoal);
-//std::cout << "added " << pgoal << " in " << this;
-//std::cout << ' ' << pgoal->first << pgoal->second.hypstotrim;
+        goalptr->second.hypstotrim = hypstotrim(goalptr);
+//std::cout << "added " << goalptr << " in " << this;
+//std::cout << ' ' << goalptr->first << goalptr->second.hypstotrim;
     }
 //std::cout << moves;
     return true;
@@ -58,7 +57,7 @@ bool Environ::valid(Move const & move) const
 Moves Environ::ourmoves(Node const & node, std::size_t stage) const
 {
     Assiters const & assvec(m_database.assvec());
-    Prooftree tree(prooftree(node.pgoal->first));
+    Prooftree tree(prooftree(node.goalptr->first));
     Moves moves;
 //std::cout << "Finding moves for " << node;
 //std::cout << "stage " << stage << std::endl;
@@ -81,29 +80,29 @@ Moves Environ::ourmoves(Node const & node, std::size_t stage) const
 // Evaluate leaf nodes, and record the proof if proven.
 Eval Environ::evalourleaf(Node const & node) const
 {
-    if (!node.pparent && !node.pgoal->second.hypstotrim.empty())
+    if (!node.pparent && !node.goalptr->second.hypstotrim.empty())
         trimhyps(node); // Only for non-defer moves with hypotheses to trim
     return eval(node.penv->hypslen
-                + node.pgoal->first.size()
+                + node.goalptr->first.size()
                 + node.defercount());
 }
 Eval Environ::evaltheirleaf(Node const & node) const
 {
     if (node.attempt.type != Move::ASS)
-        return eval(hypslen + node.pgoal->first.size() + node.defercount());
+        return eval(hypslen + node.goalptr->first.size() + node.defercount());
 //std::cout << "Evaluating " << node;
     double eval(1);
     for (Hypsize i(0); i < node.attempt.hypcount(); ++i)
     {
         if (node.attempt.isfloating(i))
             continue; // Skip floating hypothesis.
-        pGoal pgoal(node.attempt.hypvec[i]);
-        if (done(pgoal, node.attempt.hyptypecode(i)))
+        Goalptr goalptr(node.attempt.hypvec[i]);
+        if (done(goalptr, node.attempt.hyptypecode(i)))
             continue; // Skip proven goals.
-        Bvector const & hypstotrim(pgoal->second.hypstotrim);
+        Bvector const & hypstotrim(goalptr->second.hypstotrim);
         Proofsize const newhypslen(hypstotrim.empty() ? hypslen :
                                    m_assiter->second.hypslen(hypstotrim));
-        double const neweval(score(newhypslen + pgoal->first.size()));
+        double const neweval(score(newhypslen + goalptr->first.size()));
         if (neweval < eval)
             eval = neweval;
     }
@@ -134,7 +133,7 @@ bool Environ::addsubenv(Node const & node)
     // Node's sub environment pointer
     Environ * & penv(const_cast<Environ * &>(node.penv));
     std::string label(hypslabel(penv->m_assiter->second.hypiters,
-                                node.pgoal->second.hypstotrim));
+                                node.goalptr->second.hypstotrim));
     // Find if the sub environment named label already exists.
     Subenvs::iterator enviter(subenvs.find(label));
     // If so, point the node's sub environment pointer to it.

@@ -42,6 +42,8 @@ public:
     }
 };
 
+// Evaluation (value, sure?)
+typedef std::pair<double, bool> Eval;
 
 // Node of the search tree = {game state, evaluation}
 template<class Game>
@@ -51,8 +53,6 @@ class MCTSNode : public State<Game>
     double value;
     // Is evaluation sure?
     bool sure;
-    // Evaluation (value, sure?)
-    typedef std::pair<double, bool> Eval;
     // Update evaluation.
     void eval(Eval v) { value = v.first, sure = v.second; }
     // Stage of move generation
@@ -77,7 +77,6 @@ template<class Game>
 struct MCTS : private Tree<MCTSNode<Game> >
 {
     typedef typename Game::Moves Moves;
-    typedef typename MCTSNode<Game>::Eval Eval;
     typedef Tree<MCTSNode<Game> > MCTSTree;
     using typename MCTSTree::size_type;
     using typename MCTSTree::Nodeptr;
@@ -110,10 +109,10 @@ private:
 public:
     // Construct a tree with 1 node.
     template<class T>
-    MCTS(T const & game, double const exploration[2]) : MCTSTree(game)
+    MCTS(T const & game, double const exploration[2]) :
+        MCTSTree(game), m_playcount(0)
     {
-        m_exploration[0] = exploration[0];
-        m_exploration[1] = exploration[1];
+        std::copy(exploration, exploration + 2, m_exploration);
         initcache();
     }
     using MCTSTree::clear;
@@ -257,21 +256,23 @@ public:
     // Play out once. Return the value at the root.
     double playonce()
     {
+        if (playcount() == 0)
+        {
+            // First play
+            if (data()->eval().second) // Finished
+                return data()->eval().first;
+            data()->eval(evalleaf(data()));
+            if (data()->eval().second) // Finished
+                return data()->eval().first;
+        }
+
         Nodeptr ptr(pickleaf(data()));
 //std::cout << "new leaf = " << *ptr;
-        if (ptr == data())
-        {
-            if (ptr->eval().second) // Finished
-                return ptr->eval().first;
-            // First play
-            ptr->eval(evalleaf(ptr));
-            if (ptr->eval().second) // Finished
-                return ptr->eval().first;
-        }
         if (expand(ptr))
             evalnewleaves(ptr);
 //std::cout << "Back propagating." << std::endl;
         backprop(ptr);
+        ++m_playcount;
         return value();
     }
     // Play out until the value is sure or size limit is reached.
@@ -287,18 +288,11 @@ public:
 //std::cin.get();
         }
     }
-    // Print a node. ptr should != NULL
-    static void print(Nodeptr ptr, size_type depth)
-    {
-        for (size_type i(0); i < depth; ++i)
-            std::cout << ' ';
-        std::cout << *ptr;
-        FOR (Nodeptr p, *ptr.children())
-            print(p, depth + 1);
-    }
-    void print() const { if (data()) print(data(), 0); }
+    size_type playcount() const { return m_playcount; }
     virtual ~MCTS() {}
 private:
+    // # playouts
+    size_type m_playcount;
     // Add children. Return true iff new children are found.
     // ptr should != NULL.
     bool addchildren(Nodeptr ptr, Moves const & moves)
@@ -321,7 +315,7 @@ private:
     bool doexpand(Nodeptr ptr, Moves (Game::*)(bool) const)
     {
 //std::cout << "finding legal moves for " << *ptr;
-        return ptr->stage++ > 0 ? false :
+        return ptr->m_stage++ > 0 ? false :
             addchildren(ptr, ptr->legalmoves(ptr->isourturn()));
     }
     template<class T>

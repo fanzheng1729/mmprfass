@@ -5,6 +5,7 @@
 #include "MCTS.h"
 #include "gom.h"
 #include "../util.h"
+#include "../util/for.h"
 
 // Search tree for the game
 template<std::size_t M, std::size_t N, std::size_t K>
@@ -27,16 +28,15 @@ struct GomSearchTree : MCTS<Gom<M,N,K> >
     // ptr should != NULL.
     virtual Eval evalparent(Nodeptr ptr) const
     {
-        typename MCTSearch::Children const * pc(ptr.children());
-
         double const value(this->parentval(ptr));
         // If a parent has value +/-1 then it is sure.
         if (std::abs(value) == 1)
             return Eval(value, true);
         // Otherwise it is sure only if all its children are sure.
-        bool const sure(std::find_if(pc->begin(), pc->end(),
-                                     util::not_fn(MCTSearch::issure))
-                        == pc->end());
+        bool sure(true);
+        FOR (Nodeptr child, *ptr.children())
+            if (!this->issure(child))
+                sure = false;
 
         return Eval(value, sure);
     }

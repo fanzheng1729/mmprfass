@@ -3,7 +3,7 @@
 #include "../util/timer.h"
 
 // Return the hypotheses of a goal to trim.
-Bvector Prop::hypstotrim(pGoal pgoal) const
+Bvector Prop::hypstotrim(Goalptr goalptr) const
 {
     Assertion const & ass(m_assiter->second);
     Bvector result(ass.hypcount(), false);
@@ -28,12 +28,12 @@ Bvector Prop::hypstotrim(pGoal pgoal) const
 //        std::cout << "hypcnf\n" << hypscnf.first << "cnf\n" << cnf2;
         Atom natom(cnf2.empty() ? ass.hypcount() : cnf2.atomcount());
         // Add conclusion.
-        m_database.propctors().addclause(pgoal->first, ass.hypiters, cnf2, natom);
+        m_database.propctors().addclause(goalptr->first, ass.hypiters, cnf2, natom);
         // Negate conclusion.
         cnf2.closeoff((natom - 1) * 2 + 1);
         ntotrim += result[i] = !cnf2.sat();
     }
-    return ntotrim ? ass.trimvars(result, pgoal->first) : Bvector();
+    return ntotrim ? ass.trimvars(result, goalptr->first) : Bvector();
 }
 
 // Adds substitutions to a move.

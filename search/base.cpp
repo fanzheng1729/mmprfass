@@ -137,7 +137,7 @@ static void printourchildren(SearchBase::Nodeptr ptr, SearchBase const & base)
 static void printournode(SearchBase::Nodeptr ptr)
 {
     Move const & lastmove(ptr.parent()->game().attempt);
-    Proofsteps const & steps(ptr->game().pgoal->first);
+    Proofsteps const & steps(ptr->game().goalptr->first);
     strview typecode(ptr->game().typecode);
     Hypsize i(lastmove.matchhyp(steps, typecode));
     strview hyp(lastmove.pass->second.hypiters[i]->first);
@@ -181,7 +181,7 @@ static void printtheirnode(SearchBase::Nodeptr ptr)
 static void printgoal(SearchBase::Nodeptr ptr)
 {
     std::cout << "Goal " << ptr->eval().first << ' ';
-    Goal goal = {ptr->game().pgoal->first, ptr->game().typecode};
+    Goal goal = {ptr->game().goalptr->first, ptr->game().typecode};
     std::cout << goal.expression();
 }
 
@@ -239,6 +239,7 @@ void SearchBase::printmainline(Nodeptr ptr, bool detailed) const
 void SearchBase::printstats() const
 {
     static const char * const s[] = {" V, ", " ?, ", " X in "};
+    std::cout << playcount() << " plays, ";
     std::cout << size() << " nodes, ";
     for (int i(1); i >= -1; --i)
         std::cout << countgoal(i) << s[1 - i];

@@ -6,48 +6,33 @@
 #include "../util/iter.h"
 #include "move.h"
 
-// Proof goal
-struct Goal
-{
-    Proofsteps const & prPolish;
-    strview typecode;
-    Expression expression() const
-    {
-        Expression result(verifyproofsteps(prPolish));
-        if (!result.empty()) result[0] = typecode;
-        return result;
-    }
-    operator==(Goal other) const
-    { return &prPolish == &other.prPolish && typecode == other.typecode; }
-};
-
 // Node in proof search tree
 struct Node
 {
     typedef ::Move Move;
     typedef ::Moves Moves;
     // Pointer to rev Polish of expression to be proved
-    Environ::pGoal pgoal;
+    Goalptr goalptr;
     strview typecode;
-    Goal goal() const { Goal goal = {pgoal->first, typecode}; return goal; }
+    Goal goal() const { Goal goal = {goalptr->first, typecode}; return goal; }
     // Pointer to the parent, if our turn and node is deferred
     Node const * pparent;
     // Proof attempt made, if not our turn
     Move attempt;
     // Essential hypotheses needed, if not our turn
-    struct Compgoal : std::less<Environ::pGoal>
+    struct Compgoal : std::less<Goalptr>
     {
-//        bool operator()(Environ::pGoal p, Environ::pGoal q) const
+//        bool operator()(Goalptr p, Goalptr q) const
 //        { return p->first < q->first; }
     };
-    std::set<Environ::pGoal, Compgoal> hypset;
+    std::set<Goalptr, Compgoal> hypset;
     // Pointer to the current and initial environments
     Environ *penv, *penv0;
-    Node() : pgoal(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
-    Node(Environ::pGoal goal, strview type, Environ * p = NULL) :
-        pgoal(goal), typecode(type), pparent(NULL), penv(p), penv0(p) {}
+    Node() : goalptr(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
+    Node(Goalptr pgoal, strview type, Environ * p = NULL) :
+        goalptr(pgoal), typecode(type), pparent(NULL), penv(p), penv0(p) {}
     Node(Node const & node) :
-        pgoal(node.pgoal), typecode(node.typecode), pparent(&node),
+        goalptr(node.goalptr), typecode(node.typecode), pparent(&node),
         penv(node.penv), penv0(node.penv0) {}
     // # of defers to the node
     std::size_t defercount() const
@@ -85,7 +70,7 @@ struct Node
         {
             // Verify the move.
             if (move.type == Move::ASS)
-                if (pgoal->first != move.exprPolish() ||
+                if (goalptr->first != move.exprPolish() ||
                     typecode != move.exptypecode())
                     return false;
             // Record the move.
@@ -98,7 +83,7 @@ struct Node
         {
         case Move::ASS:
             // Pick the hypothesis.
-            pgoal = lastmove.hypvec[move.index];
+            goalptr = lastmove.hypvec[move.index];
             typecode = lastmove.hyptypecode(move.index);
             pparent = NULL;
             return true;
@@ -124,7 +109,7 @@ struct Node
     }
     Moves ourmoves(std::size_t stage) const
     {
-        if (penv->done(pgoal, typecode))
+        if (penv->done(goalptr, typecode))
             return Moves();
         if (penv->staged)
             return penv->ourmoves(*this, stage);
@@ -153,10 +138,10 @@ struct Node
 //std::cout << "Added hyp\n" << *hyps.back();
         }
         // The whose proof
-        pgoal->second.status = Environ::PROVEN;
-        ::writeproof(pgoal->second.proofsteps, attempt.pass, hyps);
+        goalptr->second.status = PROVEN;
+        ::writeproof(goalptr->second.proofsteps, attempt.pass, hyps);
 //std::cout << penv << " proves " << goal().expression();
-//std::cout << pgoal->second.proofsteps;
+//std::cout << goalptr->second.proofsteps;
     }
 };
 

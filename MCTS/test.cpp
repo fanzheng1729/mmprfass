@@ -38,7 +38,6 @@ static bool checknim(std::size_t const * p, std::size_t sizelimit,
 }
 
 #include "gomsearch.h"
-#include "../search/dummy.h"
 template<std::size_t M, std::size_t N, std::size_t K>
 static double playgom(int * p, std::size_t sizelimit,
                       double const exploration[2])

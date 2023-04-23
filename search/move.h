@@ -2,8 +2,8 @@
 #define MOVE_H_INCLUDED
 
 #include <iostream>
-#include "environ.h"
-#include "../proof/verify.h"
+#include "../ass.h"
+#include "goal.h"
 
 // Move in proof search tree
 struct Move;
@@ -27,7 +27,7 @@ struct Move
     // Substitutions to be used, if our turn
     Substitutions substitutions;
     // Essential hypotheses needed, if our turn
-    std::vector<Environ::pGoal> hypvec;
+    std::vector<Goalptr> mutable hypvec;
     Move(Type t = NONE) : type(t), pass(NULL) {}
     // A move applying an assertion, on our turn
     Move(Assptr ptr, Substitutions const & subst) :

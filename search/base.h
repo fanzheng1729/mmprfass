@@ -16,11 +16,11 @@ struct SearchBase : Environ, MCTS<Node>
     {
         if (iter->second.expression.empty())
             return;
-        pGoal pgoal(Environ::addgoal(iter->second.exprPolish));
+        Goalptr goalptr(Environ::addgoal(iter->second.exprPolish));
         // The node is copied when constructing the search tree,
         // making the pointer to parent dangling, so it must be reset.
         const_cast<Node &>(data()->game()) =
-        Node(pgoal, iter->second.expression[0], this);
+        Node(goalptr, iter->second.expression[0], this);
     }
     // UCB threshold for generating a new batch of moves
     // Change this to turn on staged move generation.
@@ -33,7 +33,7 @@ struct SearchBase : Environ, MCTS<Node>
         // Our turn
         Node const & node(ptr->game());
         double const value(score(node.penv->hypslen
-                                 + node.pgoal->first.size()
+                                 + node.goalptr->first.size()
                                  + ptr->stage()));
         return value + UCBbonus(1, ptr.size(), 1);
     }
@@ -42,7 +42,7 @@ struct SearchBase : Environ, MCTS<Node>
         Node const & node(ptr->game());
         bool loopsback(SearchBase::Nodeptr ptr);
         return loopsback(ptr) ? Eval(-1, true) :
-            ptr->isourturn() && done(node.pgoal, node.typecode) ? Eval(1, true) :
+            ptr->isourturn() && done(node.goalptr, node.typecode) ? Eval(1, true) :
                 ptr->isourturn() ? node.penv->evalourleaf(node) :
                     node.penv->evaltheirleaf(node);
     }
@@ -64,7 +64,7 @@ struct SearchBase : Environ, MCTS<Node>
     // Proof of the assertion, if any
     Proofsteps const & proof() const
     {
-        return data()->game().pgoal->second.proofsteps;
+        return data()->game().goalptr->second.proofsteps;
     }
     // Printing routines. DO NOTHING if ptr is NULL.
     void printmainline(Nodeptr ptr, bool detailed = false) const;
