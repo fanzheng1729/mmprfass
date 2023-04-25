@@ -17,7 +17,7 @@ bool isonestep(Proofsteps const & steps);
 
 // Return the proof tree. For the step proof[i],
 // Retval[i] = {index of hyp1, index of hyp2, ...}
-// Return empty tree if not okay.
+// Return empty tree if not okay. Only for uncompressed proofs
 Prooftree prooftree(Proofsteps const & steps);
 
 // Return the indentations of all the proofs in a proof tree.

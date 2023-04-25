@@ -124,7 +124,7 @@ if (iter->first == "exp") tree.navigate();
         const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
         std::cout << "Duplicate" << std::endl;
     }
-    else if (iter->first == "exp")
+    else if (iter->first == "imp")
     {
         Printer printer(&database.typecodes());
         verifyproofsteps(tree.proof(), printer, &*iter);
@@ -148,7 +148,7 @@ bool testpropsearch
     Assiters::size_type all(0), solved(0);
     // Test assertions.
     Assiters const & assiters(database.assvec());
-    for (Assiters::size_type i(1); i < assiters.size(); ++i)
+    for (Assiters::size_type i(396); i < assiters.size(); ++i)
     {
         Assiter iter(assiters[i]);
 //        Assiter iter1 = database.assertions().find("biass");

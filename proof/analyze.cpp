@@ -45,7 +45,7 @@ static bool treeassertionref
 
 // Return the proof tree. For the step proof[i],
 // Retval[i] = {index of root of arg1, index of root of arg2, ...}
-// Return empty tree if not okay.
+// Return empty tree if not okay. Only for uncompressed proofs
 Prooftree prooftree(Proofsteps const & steps)
 {
     std::vector<Proofsize> stack;

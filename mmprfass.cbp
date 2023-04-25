@@ -12,9 +12,6 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="setn-pred.mm ZFC" />
-				<Compiler>
-					<Add option="-std=c++98" />
-				</Compiler>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/mmprfass" prefix_auto="1" extension_auto="1" />
@@ -64,13 +61,14 @@
 		<Unit filename="proof.h" />
 		<Unit filename="proof/analyze.cpp" />
 		<Unit filename="proof/analyze.h" />
+		<Unit filename="proof/printer.cpp" />
+		<Unit filename="proof/printer.h" />
 		<Unit filename="proof/step.cpp" />
 		<Unit filename="proof/step.h" />
 		<Unit filename="proof/verify.cpp" />
 		<Unit filename="proof/verify.h" />
 		<Unit filename="propctor.cpp" />
 		<Unit filename="propctor.h" />
-		<Unit filename="read.h" />
 		<Unit filename="readdata.cpp" />
 		<Unit filename="readfile.cpp" />
 		<Unit filename="sat.cpp" />
@@ -88,6 +86,7 @@
 		<Unit filename="search/environ.h" />
 		<Unit filename="search/gen.cpp" />
 		<Unit filename="search/gen.h" />
+		<Unit filename="search/goal.h" />
 		<Unit filename="search/move.h" />
 		<Unit filename="search/node.h" />
 		<Unit filename="search/prop.cpp" />
@@ -102,6 +101,7 @@
 		<Unit filename="test.cpp" />
 		<Unit filename="test.h" />
 		<Unit filename="token.h" />
+		<Unit filename="typecode.h" />
 		<Unit filename="util.h" />
 		<Unit filename="util/arith.h" />
 		<Unit filename="util/filter.h" />

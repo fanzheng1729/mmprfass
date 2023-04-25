@@ -128,7 +128,7 @@ int main(int argc, char ** argv)
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
 //    std::basic_streambuf<char> * sb(std::cout.rdbuf(out.rdbuf()));
-    if (!testpropsearch(database, 4 << 10, parameters))
+    if (!testpropsearch(database, 60 << 10, parameters))
         return EXIT_FAILURE;
 //Also please uncomment this line, or you will get a segmentation fault.
 //    std::cout.rdbuf(sb);

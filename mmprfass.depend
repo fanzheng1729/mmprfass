@@ -723,7 +723,7 @@
 	"proof.h"
 	"strview.h"
 
-1682182727 c:\users\elitebook\downloads\metamath\mmprfass\proof\analyze.h
+1682415182 c:\users\elitebook\downloads\metamath\mmprfass\proof\analyze.h
 	"step.h"
 
 1671906786 c:\users\elitebook\downloads\metamath\mmprfass\wff.h
@@ -750,7 +750,7 @@
 	"io.h"
 	"strview.h"
 
-1682270649 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1682370870 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	<cstdlib>
 	<fstream>
 	"database.h"
@@ -1234,7 +1234,7 @@
 1676217189 c:\users\elitebook\downloads\metamath\mmprfass\util\progress.h
 	<iostream>
 
-1682249260 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
+1682370863 source:c:\users\elitebook\downloads\metamath\mmprfass\search\prop.cpp
 	"prop.h"
 	"../util/progress.h"
 	"../util/timer.h"
