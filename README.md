@@ -1,4 +1,4 @@
-# mmprfass
+# A proof development tool for metamath
 
 This is a prototype of proof development tool intended to work with metamath (https://us.metamath.org/), a minimalist formal language capable of expressing all the mathematical proofs ever created.
 
