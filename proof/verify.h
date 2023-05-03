@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include "printer.h"
+#include "step.h"
 #include "../util/for.h"
 
 // Extract proof steps from a compressed proof.

@@ -70,10 +70,6 @@ typedef std::set<std::pair<Symbol2, Symbol2> > Disjvars;
 typedef std::size_t Proofnumber;
 // Vector of proof numbers
 typedef std::vector<Proofnumber> Proofnumbers;
-// Proof is a sequence of labels.
-typedef std::vector<std::string> Proof;
-// Iterator to a proof
-typedef Proof::const_iterator Prfiter;
 
 // An axiom or a theorem
 struct Assertion;

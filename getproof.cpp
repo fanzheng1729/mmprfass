@@ -14,13 +14,12 @@ bool unfinishedstat(Tokens const & tokens, strview stattype, strview label)
     return tokens.empty();
 }
 
-// Print error message indicating a proof is incomplete (-1) or absent (0).
+// Print error message indicating a proof is incomplete (-1) or bad (0).
 int printbadprooferr(strview label, int err)
 {
-    if (err == -1)
-        std::cerr << "Warning: Proof of theorem " << label << "is incomplete\n";
-    else if (err == 0)
-        std::cerr << "Theorem " << label << " has no proof" << std::endl;
+    static const char * prefix[] = {"Warning: incomplete", "Error: no"};
+    if (err != 1)
+        std::cerr << prefix[err + 1] << " proof for theorem " << label << '\n';
     return err;
 }
 

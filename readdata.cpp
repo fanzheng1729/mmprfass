@@ -257,7 +257,7 @@ int Imp::readregularproof(strview label, Proofsteps & steps)
             return 0;
         }
 
-        if (!(steps += Proofstep(token, m_database.assertions(), m_scopes)))
+        else if (!(steps += Proofstep(token, m_database.assertions(), m_scopes)))
         {
             proofinactivereferr(token, label);
             return 0;
@@ -269,7 +269,7 @@ int Imp::readregularproof(strview label, Proofsteps & steps)
 
     m_tokens.pop(); // Discard $. token
 
-    return printbadprooferr(label, steps.empty() ? 0 : incomplete ? -1 : 1);
+    return printbadprooferr(label, incomplete ? -1 : !steps.empty());
 }
 
 // Add a floating hypothesis. Return true iff okay.

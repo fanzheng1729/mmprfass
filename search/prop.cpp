@@ -98,7 +98,7 @@ Prop::size_type testpropsearch
     tree.play(sizelimit);
     // Check answer
     tree.printstats();
-if (iter->first == "exp") tree.navigate();
+if (iter->first == "test181") tree.navigate();
     if (tree.size() > sizelimit)
     {
         std::cout << "Tree size limit exceeded. Main line:\n";
@@ -122,9 +122,9 @@ if (iter->first == "exp") tree.navigate();
     else if (isonestep(tree.proof()))
     {
         const_cast<Assertion &>(iter->second).type |= Assertion::DUPLICATE;
-        std::cout << "Duplicate" << std::endl;
+        std::cout << "Duplicate of " << tree.proof().back() << std::endl;
     }
-    else if (iter->first == "imp")
+    else if (iter->first == "exp")
     {
         Printer printer(&database.typecodes());
         verifyproofsteps(tree.proof(), printer, &*iter);
@@ -148,7 +148,7 @@ bool testpropsearch
     Assiters::size_type all(0), solved(0);
     // Test assertions.
     Assiters const & assiters(database.assvec());
-    for (Assiters::size_type i(396); i < assiters.size(); ++i)
+    for (Assiters::size_type i(2700); i < assiters.size(); ++i)
     {
         Assiter iter(assiters[i]);
 //        Assiter iter1 = database.assertions().find("biass");

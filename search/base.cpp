@@ -45,13 +45,13 @@ static bool loopsback(SearchBase::Nodeptr ptr, SearchBase::Nodeptr ancestor)
     Node const & node(ptr->game());
     FOR (SearchBase::Nodeptr child, *ancestor.children())
     {
-        Node const & game(child->game());
-        if (game.attempt.type != Move::ASS || child->eval().first == -1)
+        Node const & node2(child->game());
+        if (node2.attempt.type != Move::ASS || child->eval().first == -1)
             continue; // attempt invalid
         if (ancestor == ptr.parent())
-            if ((!game.attempt.hypvec.empty() && game.hypset.empty()))
+            if ((!node2.attempt.hypvec.empty() && node2.hypset.empty()))
                 continue; // attempt not checked
-        if (&node != &game && node >= game)
+        if (&node != &node2 && node >= node2)
             return true;
         if (SearchBase::Nodeptr cousin = onlyopenchild(child))
             if (loopsback(ptr, cousin))

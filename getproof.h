@@ -7,7 +7,7 @@ class Tokens;
 // Determine if there is no more token before finishing a statement.
 bool unfinishedstat(Tokens const & tokens, strview stattype, strview label);
 
-// Print error message indicating a proof is incomplete (-1) or absent (0).
+// Print error message indicating a proof is incomplete (-1) or bad (0).
 int printbadprooferr(strview label, int err);
 
 // Get sequence of letters in a compressed proof (Appendix B).

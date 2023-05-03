@@ -3,6 +3,11 @@
 
 #include "../proof.h"
 
+// Proof is a sequence of labels.
+typedef std::vector<std::string> Proof;
+// Iterator to a proof
+typedef Proof::const_iterator Prfiter;
+
 // Step in a regular or compressed proof
 struct Proofstep
 {

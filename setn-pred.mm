@@ -23340,3 +23340,64 @@ $)
     ZABDZTCEFZCEZAEZGRHZSUCUDSHZUCUDUEIZUBAUDUEACAAJCBAJKUFUACUDUECCACJCBCJKUDU
     EUAABCLMNNOPQ $.
 
+  $(
+  
+  test1 $p |- ( ph -> -. -. ph ) $= ? $.
+  
+  test2 $p |- ( ( ph -> ps ) -> ( ( ps -> ch ) -> ( ph -> ch ) ) ) $= ? $.
+  
+  test3 $p |- ( -. ph -> ( ph -> F. ) ) $= ? ? $.
+  
+  test4 $p |- ( -. -. ph -> ph ) $= ? $.
+  
+  test5 $p |- ( ph -> ( ps -> ps ) ) $= ? $.
+  
+  test6 $p |- ( ( -. ph -> ph ) -> ph ) $= ? $.
+  
+  test7 $p |- ( ( ph -> ps ) -> ( ( -. ph -> ps ) -> ps ) ) $= ? $.
+  
+  test8 $p |- ( ( ph \/ ps ) -> ( ( ph -> ch ) -> ( ( ps -> ch ) -> ch ) ) ) $= ? $.
+  
+  test9 $p |- ( ph -> ( ph \/ ps ) ) $= ? $.
+  
+  test10 $p |- ( ps -> ( ph \/ ps ) ) $= ? $.
+  
+  test11 $p |- ( ( ph /\ ps ) -> ph ) $= ? $.
+  
+  test12 $p |- ( ( ph /\ ps ) -> ps ) $= ? $.
+  
+  test13 $p |- ( ph -> ( ps -> ( ph /\ ps ) ) ) $= ? $.
+  
+  test14 $p |- ( -. ( ph -> ps ) -> ph ) $= ? $.
+  
+  test15 $p |- ( -. ( ph -> ps ) -> -. ps ) $= ? ? $.
+  
+  test16 $p |- ( ( -. ph -> ( ( ph -> ps ) -> ps ) ) -> ( ( ph -> ps ) -> ps ) ) $= ? ? $.
+  
+  test17 $p |- ( ( ph -> ps ) -> ( ( ps -> ph ) -> ( ph <-> ps ) ) ) $= ? $.
+  
+  test18 $p |- ( ( ph <-> T. ) -> ( ( ps <-> F. ) -> ( ( ph -> ps ) -> ch ) ) ) $= ? ? ? $.
+  
+  test181 $p |- ( ph -> ( -. ps -> ( ( ph -> ps ) -> ch ) ) ) $= ? ? ? $.
+  
+  test19 $p |- ( ( ph <-> ps ) -> ( ph -> ps ) ) $= ? $.
+  
+  test20 $p |- ( ( ph <-> ps ) <-> ( ph <-> ps ) ) $= ? ? $.
+  
+  test21 $p |- ( ph -> ( ph <-> T. ) ) $= ? ? $.
+  
+  test22 $p |- ( -. ph -> ( ph <-> F. ) ) $= ? ? $.
+  
+  test23 $p |- ( ( ph <-> ps ) <-> ( ps <-> ph ) ) $= ? $.
+  
+  test24 $p |- ( ( ph -> T. ) -> T. ) $= ? ? $.
+  
+  test25 $p |- ( ( T. -> ph ) -> ph ) $= ? ? $.
+  
+  test26 $p |- ( ( F. -> ph ) -> T. ) $= ? ? $.
+  
+  test27 $p |- ( -. -. ph <-> ph ) $= ? ? $.
+  
+  test28 $p |- ( ( -. ph -> ps ) -> ( -. ps -> ph ) ) $= ? $.
+  
+  $)
