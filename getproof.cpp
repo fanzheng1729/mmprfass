@@ -17,7 +17,7 @@ bool unfinishedstat(Tokens const & tokens, strview stattype, strview label)
 // Print error message indicating a proof is incomplete (-1) or bad (0).
 int printbadprooferr(strview label, int err)
 {
-    static const char * prefix[] = {"Warning: incomplete", "Error: no"};
+    static const char * const prefix[] = {"Warning: incomplete", "Error: no"};
     if (err != 1)
         std::cerr << prefix[err + 1] << " proof for theorem " << label << '\n';
     return err;
