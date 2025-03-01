@@ -18,7 +18,7 @@ typedef std::vector<Terms::size_type> Genstack;
 void generateupto
     (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
      strview type, Proofsize size, Genresult & result,
-     Termcounts & counts);
+     Termcounts & termcounts);
 
 // Virtual base class for adder
 struct Adder
@@ -30,7 +30,7 @@ struct Adder
 // Generate all terms for all arguments with rPolish up to a given size.
 void dogenerate
     (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
-     Proofsize argcount, Argtypes const & argtypes, Proofsize size,
-     Genresult & result, Termcounts & counts, Adder & adder);
+     Argtypes const & argtypes, Proofsize size,
+     Genresult & result, Termcounts & termcounts, Adder & adder);
 
 #endif // GEN_H_INCLUDED

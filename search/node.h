@@ -2,9 +2,11 @@
 #define NODE_H_INCLUDED
 
 #include <algorithm>
+#include <cstddef>
 #include "../io.h"
 #include "../util/iter.h"
 #include "move.h"
+#include "../MCTS/stageval.h"
 
 // Node in proof search tree
 struct Node
@@ -15,38 +17,31 @@ struct Node
     Goalptr goalptr;
     strview typecode;
     Goal goal() const { Goal goal = {goalptr->first, typecode}; return goal; }
-    // Pointer to the parent, if our turn and node is deferred
+    // # defers to the node
+    std::size_t defercount;
+    // Pointer to the parent, for deferred nodes
     Node const * pparent;
-    // Proof attempt made, if not our turn
+    // Proof attempt made, on their turn
     Move attempt;
-    // Essential hypotheses needed, if not our turn
+    // Essential hypotheses needed, on their turn
     struct Compgoal : std::less<Goalptr>
     {
 //        bool operator()(Goalptr p, Goalptr q) const
 //        { return p->first < q->first; }
     };
     std::set<Goalptr, Compgoal> hypset;
-    // Pointer to the current and initial environments
-    Environ *penv, *penv0;
-    Node() : goalptr(NULL), typecode(NULL), pparent(NULL), penv(NULL), penv0(NULL) {}
-    Node(Goalptr pgoal, strview type, Environ * p = NULL) :
-        goalptr(pgoal), typecode(type), pparent(NULL), penv(p), penv0(p) {}
+    // Pointer to the current environment
+    Environ *penv;
+    Node(Goalptr pgoal = NULL, strview type = NULL, Environ * p = NULL) :
+        goalptr(pgoal), typecode(type), defercount(0), penv(p) {}
     Node(Node const & node) :
-        goalptr(node.goalptr), typecode(node.typecode), pparent(&node),
-        penv(node.penv), penv0(node.penv0) {}
-    // # of defers to the node
-    std::size_t defercount() const
-    {
-        std::size_t count(0);
-        for (Node const * p(pparent); p; p = p->pparent)
-            ++count;
-        return count;
-    }
+        goalptr(node.goalptr), typecode(node.typecode), defercount(node.defercount), pparent(&node),
+        penv(node.penv) {}
     friend std::ostream & operator<<(std::ostream & out, Node const & node)
     {
         out << node.goal().expression();
         if (node.attempt.type != Move::NONE)
-            out << "Proof attempt (" << node.defercount() << ") "
+            out << "Proof attempt (" << node.defercount << ") "
                 << node.attempt << std::endl;
         return out;
     }
@@ -63,64 +58,67 @@ struct Node
         return std::includes(hypset.begin(), hypset.end(),
                              node.hypset.begin(), node.hypset.end(), Compgoal());
     }
-    // Play a move.
-    bool play(Move const & move, bool const isourturn)
+    // Check if a move is legal.
+    bool legal(Move const & move, bool ourturn) const
     {
-        if (isourturn)
+        if (ourturn && move.type == Move::ASS) // Check if the goal matches.
+            return goalptr->first == move.exprPolish() &&
+                    typecode == move.exptypecode();
+        if (!ourturn && attempt.type == Move::ASS) // Check index bound.
+            return move.index < attempt.hypcount();
+        return true;
+    }
+    // Play a move.
+    void play(Move const & move, bool ourturn)
+    {
+        if (ourturn) // On our turn, record the move.
         {
-            // Verify the move.
-            if (move.type == Move::ASS)
-                if (goalptr->first != move.exprPolish() ||
-                    typecode != move.exptypecode())
-                    return false;
-            // Record the move.
+//std::cout << ' ' << move << " played";
             attempt = move;
-            return true;
+            move.type == Move::DEFER ? ++defercount : (defercount = 0);
+            return;
         }
-        // Not our turn. Get last move (proof attempt).
+        // On their turn, get the last move (proof attempt).
         Move const & lastmove(pparent->attempt);
-        switch (lastmove.type)
+//std::cout << " parent = " << pparent << ' ' << lastmove << '/' << move.index;
+        if (lastmove.type == Move::ASS)
         {
-        case Move::ASS:
             // Pick the hypothesis.
             goalptr = lastmove.hypvec[move.index];
             typecode = lastmove.hyptypecode(move.index);
-            pparent = NULL;
-            return true;
-        case Move::DEFER:
-            pparent = pparent->pparent;
-            return true;
-        default: // Empty move
-            return false;
         }
     }
     Moves theirmoves() const
     {
+//std::cout << "Finding their moves ";
         if (attempt.type == Move::ASS)
         {
             Moves result;
             result.reserve(attempt.hypcount() - attempt.varcount());
-            for (Moves::size_type i(0); i < attempt.hypcount(); ++i)
+//std::cout << "for " << this << ' ' << attempt.pass->first << ": ";
+            for (Hypsize i(0); i < attempt.hypcount(); ++i)
                 if (!attempt.isfloating(i))
                     result.push_back(i);
+//std::cout << result.size() << " moves added" << std::endl;
             return result;
         }
         return Moves(attempt.type == Move::DEFER, Move::DEFER);
     }
-    Moves ourmoves(std::size_t stage) const
+    Moves ourmoves(stage_t stage) const
+//std::cout << "Finding our moves ";
     {
-        if (penv->done(goalptr, typecode))
+        if (goalptr->second.status == PROVEN)
             return Moves();
         if (penv->staged)
             return penv->ourmoves(*this, stage);
 
-        Moves moves(penv->ourmoves(*this, defercount()));
+        Moves moves(penv->ourmoves(*this, defercount));
         moves.push_back(Move::DEFER);
         return moves;
     }
-    Moves legalmoves(bool isourturn, std::size_t stage) const
+    Moves moves(bool ourturn, stage_t stage) const
     {
-        return isourturn ? ourmoves(stage) : stage > 0 ? Moves() : theirmoves();
+        return ourturn ? ourmoves(stage) : stage > 0 ? Moves() : theirmoves();
     }
     // Add proof for a node using an assertion.
     void writeproof() const

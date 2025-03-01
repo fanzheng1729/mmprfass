@@ -1,9 +1,12 @@
 #include <algorithm>
+#include <iterator>
 #include "comment.h"
 #include "io.h"
 #include "sect.h"
 #include "strview.h"
 #include "util/for.h"
+
+std::size_t Section::tokenpos() const { return pcomment->tokenpos; }
 
 std::ostream & operator<<(std::ostream & out, const Sectionnumber & sn)
 {
@@ -14,7 +17,7 @@ std::ostream & operator<<(std::ostream & out, const Sectionnumber & sn)
 
 std::ostream & operator<<(std::ostream & out, const Section & sect)
 {
-    return out << "\t(" << sect.tokenpos << ") " << sect.title << std::endl;
+    return out << "\t(" << sect.tokenpos() << ") " << sect.title << std::endl;
 }
 
 // Print the contents.
@@ -61,16 +64,9 @@ static std::string trim(std::string const & str)
         str.substr(begin, str.find_last_not_of(mmws) - begin + 1);
 }
 
-// Add a new section to sections. Return true if okay.
-static bool addsection
-    (std::string const & title, Sectionlevel const level,
-     Sections & sections, std::size_t const position)
+// Add a new section to sections. Return its reference.
+static Section & addsection(Sections & sections, Sectionlevel const level)
 {
-    if (level == 0)
-    {
-        std::cerr << "Cannot add a section at level 0" << std::endl;
-        return false;
-    }
     // Fetch the section number from sections already added.
     Sectionnumber number;
     if (!sections.empty())
@@ -79,36 +75,34 @@ static bool addsection
     // Advance section number to the next section at stated level.
     number.resize(level);
     ++number.back();
-    Section & section((sections)[number]);
-    // Data for the new section
-    section.title = title;
-    section.tokenpos = position;
-
-    return true;
+    return sections[number];
 }
 
 // Parse section header. Returns true iff there is a header ($4.4.1/Headings).
 static bool parseheader(Comment const & comment, Sections & sections)
 {
-    std::string const & content(comment.content);
+    std::string const & text(comment.text);
     // The first char should be \n.
-    if (content.empty() || content[0] != '\n')
+    if (text.empty() || text[0] != '\n')
         return false;
     // Get marker.
-    std::string::size_type end(content.find('\n', 1));
-    std::string const mark(content.substr(1, end - 1));
+    std::string::size_type end(text.find('\n', 1));
+    std::string const mark(text.substr(1, end - 1));
     Sectionlevel const level(sectionlevel(mark));
-    if (level == 0 || end >= content.size())
+    if (level == 0 || end >= text.size())
         return false;
     // Get title.
     std::string::size_type const begin(end + 1);
-    end = content.find('\n', begin);
-    std::string title(trim(content.substr(begin, end - begin)));
+    end = text.find('\n', begin);
+    std::string title(trim(text.substr(begin, end - begin)));
     // Check markers match.
-    if (content.compare(end + 1, mark.size(), mark) != 0)
+    if (text.compare(end + 1, mark.size(), mark) != 0)
         return false;
-
-    return addsection(title, level, sections, comment.position);
+    // Add new section.
+    Section & section(addsection(sections, level));
+    section.title = title;
+    section.pcomment = &comment;
+    return true;
 }
 
 // Parse section header ($4.4.1/Headings).

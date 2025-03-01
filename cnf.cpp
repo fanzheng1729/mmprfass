@@ -142,7 +142,7 @@ static void processtruthtableentry
     (Bvector const & truthtable, TTindex index,
      Bvector & processed, CNFClauses & cnf)
 {
-    Atom const atomcount(log2(truthtable.size()));
+    Atom const atomcount(util::log2(truthtable.size()));
     Bvector maskadded, compare;
     maskadded.assign(truthtable.size(), false);
     // compare[i] = if there is a block containing index and i
@@ -195,7 +195,7 @@ CNFClauses::CNFClauses(Bvector const & truthtable)
         i = std::find(begin + i + 1, processed.end(), false) - begin;
     }
     // Atom # check
-    if (atomcount() != log2(truthtable.size()) + 1)
+    if (atomcount() != util::log2(truthtable.size()) + 1)
     {
         std::cerr << "Bad CNF\n" << *this << " from truth table" << truthtable;
         clear();

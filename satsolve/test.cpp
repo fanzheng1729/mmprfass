@@ -7,7 +7,7 @@ static bool checkcnffromtruthtable(Bvector const & tt)
     if (tt.empty())
         return false;
     // Check if cnf built from tt has the same truth table as tt.
-    Atom const atomcount(log2(tt.size()));
+    Atom const atomcount(util::log2(tt.size()));
     CNFClauses cnf(tt);
     cnf.push_back(CNFClause(1, atomcount * 2));
     if (tt != cnf.truthtable(atomcount))

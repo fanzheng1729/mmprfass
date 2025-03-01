@@ -29,12 +29,11 @@
 //
 // Please let me know of any bugs.
 
-#include <cstdlib>
-#include <fstream>
+//#include <fstream>
 #include "database.h"
 #include "io.h"
 #include "search/prop.h"
-#include "stmt.h"
+#include "sect.h"
 #include "test.h"
 #include "util/timer.h"
 
@@ -67,45 +66,52 @@ int main(int argc, char ** argv)
 
     Tokens tokens;
     Comments comments;
-    std::cout << "Reading file" << std::endl;
+    std::cout << "Reading file ... ";
     Timer timer;
     // Read tokens. Returns true iff okay.
-    bool read(const char * const filename,
-              Tokens & tokens, Comments & comments);
+    bool read(const char * const filename, Tokens & tokens, Comments & comments);
     if (!read(argv[1], tokens, comments))
         return EXIT_FAILURE;
     std::cout << "done in " << timer << 's' << std::endl;
-    std::cout << tokens.size() << " tokens, ";
-    std::cout << comments.size() << " comments" << std::endl;
 
     Sections sections(comments);
     if (!sections.empty())
         std::cout << "Last section: " << sections.rbegin()->first
                   << sections.rbegin()->second;
 
-    std::vector<Statement> statements;
-    while (!tokens.empty()) statements.push_back(Statement(tokens));
-    std::cout << statements.size() << " statements read, last one is ";
-    std::cout << (statements.back() ? "good" : "bad") << std::endl;
     tokens.position = 0;
-
-    if (!database.read(sections, tokens, comments, argv[2]))
+    // Iterator to the end section
+    Sections::const_iterator const end
+        (argv[2] ? sections.find(argv[2]) : sections.end());
+    // # tokens to read
+    Tokens::size_type const size(end == sections.end() ? tokens.size() :
+                                 end->second.tokenpos());
+    std::cout << "Reading and verifying data";
+    timer.reset();
+    if (!database.read(tokens, comments, size))
         return EXIT_FAILURE;
+    std::cout << "done in " << timer << 's' << std::endl;
 
     if (!sections.empty())
-        std::cout << "Last section: " << sections.rbegin()->first << '\t'
-                  << sections.rbegin()->second.assnumber << std::endl;
+        std::cout << "Last section: " << sections.rbegin()->first << std::endl;
     std::cout << "Variables: " << database.varvec();
 
     std::cout << "Checking iterators" << std::endl;
     if (!checkassiters(database.assertions(), database.assvec()))
         return EXIT_FAILURE;
 
+    std::cout << "Parsing syntax trees";
+    timer.reset();
     if (!database.rPolish())
         return EXIT_FAILURE;
+    std::cout << "done in " << timer << 's' << std::endl;
     std::cout << "Equality constructors: " << database.equalities();
+
+    std::cout << "Checking syntax trees";
+    timer.reset();
     if (!database.checkrPolish())
         return EXIT_FAILURE;
+    std::cout << "done in " << timer << 's' << std::endl;
 
     database.loaddefinitions();
     std::cout << "Defined syntax axioms\n" << database.definitions();
@@ -118,17 +124,19 @@ int main(int argc, char ** argv)
     if (!database.propctors().okay(database.definitions()))
         return EXIT_FAILURE;
 
-    std::cout << "Marking " << database.markpropassertions() << '/';
-    std::cout << database.assertions().size() << " propositional assertions\n";
+    std::cout << database.markpropassertions() << '/';
+    std::cout << database.assertions().size() << " propositional assertions ";
+    timer.reset();
     if (!database.checkpropassertion())
         return EXIT_FAILURE;
+    std::cout << "checked in " << timer << 's' << std::endl;
 
     double parameters[] = {0, 1e-3, 0};
 //    parameters[2] = SearchBase::STAGED;
 //Uncomment the next two lines if you want to output to a file.
 //    std::ofstream out("result.txt");
 //    std::basic_streambuf<char> * sb(std::cout.rdbuf(out.rdbuf()));
-    if (!testpropsearch(database, 8 << 10, parameters))
+    if (!testpropsearch(database, 1 << 10, parameters))
         return EXIT_FAILURE;
 //Also please uncomment this line, or you will get a segmentation fault.
 //    std::cout.rdbuf(sb);

@@ -2,29 +2,27 @@
 #define COMMENT_H_INCLUDED
 
 #include <cstddef>
-#include <iosfwd>
 #include <map>
-#include <utility>
 #include <vector>
-#include "strview.h"
+#include "token.h"
 #include "typecode.h"
 
 const char mmws[] = "\t\n\f\r "; // metamath whitespace chars ($4.1.1)
 
 struct Comment
 {
-    std::string content;
-    std::size_t position;
+    std::string text;
+    Tokens::size_type tokenpos;
+    operator Tokens::size_type() const { return tokenpos; }
 };
 
 struct Comments : std::vector<Comment>
 {
 // Classify comments ($4.4.2 and 4.4.3).
     std::vector<strview> operator[](strview type) const;
+// Discouragement ($4.4.1)
+    unsigned discouragement(Tokens::size_type from, Tokens::size_type to) const;
 };
-
-// Read and return a comment. Return "" on failure ($4.1.2).
-std::string comment(std::ifstream & in);
 
 typedef std::vector<std::string> Command;
 
@@ -46,7 +44,6 @@ struct Commentinfo
 {
     Typecodes typecodes;
     Ctordefns ctordefns;
-    Commentinfo(Comments const & comments = Comments());
 };
 
 #endif // COMMENT_H_INCLUDED

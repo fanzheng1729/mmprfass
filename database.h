@@ -25,8 +25,8 @@ class Database
     Propctors m_propctors;
 public:
     Database() : m_assvec(1) { addvar(""); }
-    bool read(struct Sections & sections, struct Tokens & tokens,
-              struct Comments const & comments, const char * const upto);
+    bool read(Tokens & tokens, Comments const & comments,
+              Tokens::size_type upto);
     void clear() { this->~Database(); new(this) Database; }
     Symbol2::ID varid(strview str) const { return varIDmap().at(str); }
     VarIDmap const & varIDmap() const { return m_varIDmap; }
@@ -78,7 +78,7 @@ public:
     // Return the iterator to tha assertion.
     Assertions::iterator addass
         (strview label, Expression const & exp, struct Scopes const & scopes,
-         bool isaxiom = false);
+         Tokens::size_type tokenpos);
     // Types of tokens
     enum Tokentype {OKAY, CONST, VAR, LABEL};
     // Determine if a new constant, variable or label can be added
@@ -92,6 +92,12 @@ public:
         if (hashyp(token) || hasass(token))
             return LABEL;
         return OKAY;
+    }
+    bool addtypecode(strview typecode, strview astypecode="", bool isbound=0)
+    {
+        std::pair<strview, bool> const mapped(astypecode, isbound);
+        std::pair<strview, std::pair<strview, bool> > value(typecode, mapped);
+        return m_commentinfo.typecodes.insert(value).second;
     }
 // Add the revPolish notation of to the whole database. Return true iff okay.
     bool rPolish()
@@ -120,7 +126,7 @@ public:
         {
             Assertion & ass(r.second);
             bool is(largestsymboldefnumber(ass,propctors(),Syntaxioms(),1));
-            ass.type ^= is * Assertion::PROPOSITIONAL;
+            ass.type |= is * Asstype::PROPOSITIONAL;
             if (is && !ass.expression.empty() &&
                 !typecodes().isprimitive(ass.expression[0]))
                 ++count;

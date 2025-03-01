@@ -81,6 +81,17 @@ typedef Assertions::const_pointer Assptr;
 typedef Assertions::const_iterator Assiter;
 // Vector of iterators to assertions
 typedef std::vector<Assiter> Assiters;
+// Types of assertions
+enum Asstype
+{
+    AXIOM = 1,
+    TRIVIAL = 2,
+    DUPLICATE = 4,
+    USELESS = TRIVIAL | DUPLICATE,
+    NOUSE = 8,
+    NONEWPROOF = 16,
+    PROPOSITIONAL = 32
+};
 
 // Iterator to a hypothesis
 typedef Hypotheses::const_iterator Hypiter;

@@ -29,7 +29,7 @@ struct Nim
     // Return if it is a win for the 1st player.
     bool win() const { return value() != 0; }
     // Return all the legal moves.
-    Moves legalmoves(bool = true) const
+    Moves moves(bool = true) const
     {
         Moves result;
         for (std::size_t pile(0); pile < N; ++pile)
@@ -38,16 +38,11 @@ struct Nim
 
         return result;
     }
-    // Play a move and return true, if it is legal.
-    // Otherwise DO NOTHING and return false.
-    bool play(Move move, bool)
+    bool legal(Move move, bool) const
     {
-        if (move.first >= N) return false;
-        std::size_t & pile(piles[move.first]);
-        if (move.second > pile) return false;
-        pile -= move.second;
-        return true;
+        return move.first < N && move.second <= piles[move.first];
     }
+    void play(Move move, bool) { piles[move.first] -= move.second; }
     // Return winning move if it is a win. Otherwise return (0, 0).
     Move winningmove() const
     {

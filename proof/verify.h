@@ -36,7 +36,7 @@ void prealloc(std::vector<SUB> & substitutions, Varsused const & vars)
 {
     if (vars.empty()) return;
 
-    Symbol2::ID maxid(std::max_element(vars.begin(), vars.end())->first);
+    Symbol2::ID const maxid(std::max_element(vars.begin(), vars.end())->first);
 
     substitutions.assign(maxid + 1, SUB());
 }

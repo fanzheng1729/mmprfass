@@ -95,7 +95,7 @@ struct Gom
         return 0;
     }
     // Return all the legal moves.
-    Moves legalmoves(bool = true) const
+    Moves moves(bool = true) const
     {
         Moves result;
         for (std::size_t i(0); i < M; ++i)
@@ -105,14 +105,13 @@ struct Gom
 
         return result;
     }
-    // Play a move and return true, if it is legal.
-    // Otherwise DO NOTHING and return false.
-    bool play(Move move, bool ourturn)
+    bool legal(Move move, bool) const
     {
-        int & pos(board[move.first][move.second]);
-        if (pos != 0) return false;
-        pos = ourturn ? 1 : -1;
-        return true;
+        return move.first < M && move.second < N && board[move.first][move.second] == 0;
+    }
+    void play(Move move, bool ourturn)
+    {
+        board[move.first][move.second] = ourturn ? 1 : -1;
     }
 };
 

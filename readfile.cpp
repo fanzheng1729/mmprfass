@@ -44,7 +44,7 @@ static Token nexttoken(std::istream & in)
 static std::string readfilename(std::ifstream & in)
 {
     std::string const filename(nexttoken(in));
-    if (filename.find('$') != std::string::npos)
+    if (filename.find('$') < std::string::npos)
     {
         std::cerr << "Filename " << filename << " contains a $"
                   << std::endl;
@@ -125,8 +125,10 @@ static bool readtokens
 
         if (token == "$(")
         {
+            // Read and return a comment. Return "" on failure ($4.1.2).
+            std::string comment(std::ifstream & in);
             Comment const newcomment = {comment(in), tokens.size()};
-            if (newcomment.content.empty())
+            if (newcomment.text.empty())
             {
                 std::cerr << "Bad comment" << std::endl;
                 return false;
@@ -168,7 +170,7 @@ static bool readtokens
         }
 
         // types of statements
-        const char * statements[] = {"$c", "$v", "$f", "$e", "$d", "$a", "$p"};
+        const char * const statements[] = {"$c", "$v", "$f", "$e", "$d", "$a", "$p"};
 
         // Count scopes
         if (token == "${")

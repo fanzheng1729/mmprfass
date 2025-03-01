@@ -5,7 +5,8 @@
 struct Timer
 {
     std::clock_t start;
-    Timer() { start = std::clock(); }
+    void reset() { start = std::clock(); }
+    Timer() { reset(); }
     operator double() const { return resolution() * (std::clock() - start); }
     static double resolution() { return 1./CLOCKS_PER_SEC; }
 };

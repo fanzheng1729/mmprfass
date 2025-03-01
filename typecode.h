@@ -8,7 +8,6 @@
 // Map: type code -> (as type code, or "" if none, is bound type code) ($4.4.3)
 struct Typecodes : std::map<std::string, std::pair<std::string, bool> >
 {
-    typedef std::vector<std::string> Command;
     Typecodes() {}
     Typecodes(struct Commands const & syntax, Commands const & bound);
     // Check if a type code is primitive. Return -1 if not found.

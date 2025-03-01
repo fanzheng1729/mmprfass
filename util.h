@@ -41,7 +41,7 @@ namespace util
     using std::not1;
     template<class T, class R>
     std::unary_negate<std::pointer_to_unary_function<T, R> >
-    not1(R (*f)(T)) { return std::not1(std::ptr_fun(f)); }
+    not1(R f(T)) { return std::not1(std::ptr_fun(f)); }
 #endif // __cpp_lib_not_fn
 
 #ifdef __cpp_lib_robust_nonmodifying_seq_ops

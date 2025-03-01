@@ -6,7 +6,6 @@
 #include "util/find.h"
 #include "util/for.h"
 #include "util/progress.h"
-#include "util/timer.h"
 #include "def.h"            // checkdefinitions
 #include "database.h"
 #include "io.h"
@@ -20,8 +19,8 @@ template<class T> static T testlog2()
 {
     T const static digits(std::numeric_limits<T>::digits);
     for (T d(0), n(1); d < digits; ++d, n *= 2)
-        if (log2(n) != d)
-            return std::cout << log2(n) << d, n;
+        if (util::log2(n) != d)
+            return std::cout << util::log2(n) << d, n;
 
     return 0;
 }
@@ -87,7 +86,7 @@ bool checkassiters
 {
     for (Assiter iter(assertions.begin()); iter != assertions.end(); ++iter)
     {
-        Assertions::size_type const n(iter->second);
+        Assertions::size_type const n(iter->second.number);
 
         if (n > assertions.size())
         {
@@ -223,9 +222,8 @@ bool Syntaxioms::checkrPolish
 // Test syntax parser. Return 1 iff okay.
 bool Database::checkrPolish() const
 {
-    std::cout << "Checking syntax trees";
     Progress progress;
-    Timer timer;
+
     Assertions::size_type count(0), all(assertions().size());
     FOR (Assertions::const_reference ass, assertions())
     {
@@ -238,16 +236,14 @@ bool Database::checkrPolish() const
         progress << ++count/static_cast<double>(all);
     }
 
-    std::cout << "done in " << timer << 's' << std::endl;
     return true;
 }
 
 // Check the syntax of the theorem (& all hypotheses). Return true iff okay.
 bool Database::checkpropassertion() const
 {
-    std::cout << "Checking ";
-    Timer timer;
     Assertions::size_type count(0), all(assvec().size());
+
     for (Assiters::size_type i(1); i < all; ++i)
     {
         Assiter const iter(assvec()[i]);
@@ -256,7 +252,7 @@ bool Database::checkpropassertion() const
             return false;
         if (typecodes().isprimitive(assertion.expression[0]))
             continue; // Skip syntax axioms.
-        if (!(assertion.type & Assertion::PROPOSITIONAL))
+        if (!(assertion.type & Asstype::PROPOSITIONAL))
             continue; // Skip non propositional assertions.
 
         ++count;
@@ -268,8 +264,6 @@ bool Database::checkpropassertion() const
         }
     }
 
-    std::cout << count << '/' << all - 1 << " propositional assertions in ";
-    std::cout << timer << 's' << std::endl;
     return true;
 }
 

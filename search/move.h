@@ -6,27 +6,22 @@
 #include "goal.h"
 
 // Move in proof search tree
-struct Move;
-// List of moves
-typedef std::vector<Move> Moves;
-
-// Move in proof search tree
 struct Move
 {
     enum Type { NONE, ASS, DEFER };
     typedef std::vector<Proofsteps> Substitutions;
     union
     {
-        // Type of the attempt, if our turn
+        // Type of the attempt, on our turn
         Type type;
-        // Index of the hypothesis, if not our turn
+        // Index of the hypothesis, on their turn
         Hypsize index;
     };
-    // Pointer to the assertion to be used
+    // Pointer to the assertion to be used, on our turn
     Assptr pass;
-    // Substitutions to be used, if our turn
+    // Substitutions to be used, on our turn
     Substitutions substitutions;
-    // Essential hypotheses needed, if our turn
+    // Essential hypotheses needed, on our turn
     std::vector<Goalptr> mutable hypvec;
     Move(Type t = NONE) : type(t), pass(NULL) {}
     // A move applying an assertion, on our turn
@@ -81,5 +76,8 @@ struct Move
         return out;
     }
 };
+
+// List of moves
+typedef std::vector<Move> Moves;
 
 #endif // MOVE_H_INCLUDED

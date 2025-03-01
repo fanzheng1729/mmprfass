@@ -38,7 +38,14 @@
 			<Add option="-pg -lgmon" />
 		</Linker>
 		<Unit filename="MCTS/MCTS.h" />
-		<Unit filename="MCTS/tree.h" />
+		<Unit filename="MCTS/MCTS1.h" />
+		<Unit filename="MCTS/MCTS2.h" />
+		<Unit filename="MCTS/refbase.h" />
+		<Unit filename="MCTS/stageval.h" />
+		<Unit filename="MCTS/statnode.h" />
+		<Unit filename="MCTS/test.cpp" />
+		<Unit filename="MCTS/tree1.h" />
+		<Unit filename="MCTS/tree2.h" />
 		<Unit filename="ass.cpp" />
 		<Unit filename="ass.h" />
 		<Unit filename="cnf.cpp" />

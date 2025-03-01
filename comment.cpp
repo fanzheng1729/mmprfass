@@ -5,7 +5,7 @@
 #include <utility>
 #include "comment.h"
 #include "io.h"
-#include "token.h"
+#include "proof.h"
 #include "util/for.h"
 
 // Return the first token in a string, or "" if there is not any.
@@ -22,11 +22,33 @@ std::vector<strview> Comments::operator[](strview type) const
     std::vector<strview> result;
 
     FOR (const_reference comment, *this)
-        if (firsttoken(comment.content) == type)
-            result.push_back(comment.content);
+        if (firsttoken(comment.text) == type)
+            result.push_back(comment.text);
 
     return result;
 }
+
+// Discouragement ($4.4.1)
+static unsigned discouragement(std::string const & text)
+{
+    static std::string const nouse = "(New usage is discouraged.)";
+    static std::string const nonewproof = "(Proof modification is discouraged.)";
+    return Asstype::NOUSE * (text.find(nouse) < std::string::npos)
+            + Asstype::NONEWPROOF * (text.find(nonewproof) < std::string::npos);
+}
+
+unsigned Comments::discouragement(Tokens::size_type from, Tokens::size_type to) const
+{
+//std::cout << "Checking discouragement from " << from << " to " << to;
+    unsigned result(0);
+    // First comment after from
+    const_iterator iter(std::lower_bound(begin(), end(), from));
+    for ( ; iter->tokenpos < to; ++iter)
+        result |= ::discouragement(iter->text);
+//std::cout << " with result " << result;
+    return result;
+}
+
 
 static void commenterr(const char * badstring, std::string const & comment)
 {
@@ -160,7 +182,7 @@ Commands Commands::operator[](strview type) const
 // Return the unquoted word. Return "" if it is not quoted.
 static std::string unquote(std::string const & str)
 {
-    return (str.size() < 3 || str[0] != '\'' || str.back() != '\'') ? "" :
+    return (str.size()<3 || str[0] != '\'' || str[str.size()-1] != '\'') ? "" :
         str.substr(1, str.size() - 2);
 }
 
@@ -263,19 +285,4 @@ Ctordefns::Ctordefns(Commands const & definitions, Commands const & primitives)
 {
     std::accumulate(definitions.begin(), definitions.end(), this, adddefinition);
     std::accumulate(primitives.begin(), primitives.end(), this, addprimitives);
-}
-
-Commentinfo::Commentinfo(Comments const & comments)
-{
-    if (comments.empty())
-        return;
-
-//std::cout << "$j comments\n" << comments["$j"];
-    Commands const commands(comments["$j"]);
-//std::cout << "$j commands\n" << commands;
-    typecodes = Typecodes(commands["syntax"], commands["bound"]);
-//std::cout << "Syntax type codes: " << typecodes;
-//std::cout << "Bound type codes: " << commands["bound"];
-    ctordefns = Ctordefns(commands["definition"], commands["primitive"]);
-//std::cout << "Constructor definitions: " << ctordefns;
 }

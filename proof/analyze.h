@@ -13,7 +13,16 @@ typedef std::pair<Prfiter, Prfiter> Subprf;
 typedef std::vector<Subprf> Subprfs;
 
 // Check if a proof has only 1 step using 1 theorem.
-bool isonestep(Proofsteps const & steps);
+inline bool isonestep(Proofsteps const & steps)
+{
+    if (steps.empty())
+        return false;
+    // index of the first ASS step
+    Proofsize i(0);
+    for ( ; i < steps.size() && steps[i].type != Proofstep::ASS; ++i) ;
+    // Check if the index is the last one.
+    return i == steps.size() - 1;
+}
 
 // Return the proof tree. For the step proof[i],
 // Retval[i] = {index of hyp1, index of hyp2, ...}

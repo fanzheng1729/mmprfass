@@ -1,25 +1,21 @@
-#include "ass.h"
 #include "database.h"
 #include "util/filter.h"
 #include "getproof.h"
 #include "io.h"
 #include "util/progress.h"
 #include "scope.h"
-#include "sect.h"
-#include "util/timer.h"
-#include "token.h"
 #include "proof/verify.h"
 
 namespace {
 class Imp
 {
+    Comments const & m_comments;
     Database & m_database;
     Scopes m_scopes;
-    Sections & m_sections;
     Tokens & m_tokens;
 public:
-    Imp(Database & database, Sections & sections, Tokens & tokens) :
-        m_database(database), m_scopes(), m_sections(sections), m_tokens(tokens)
+    Imp(Database & database, Tokens & tokens, Comments const & comments) :
+        m_comments(comments), m_database(database), m_scopes(), m_tokens(tokens)
         {}
 private:
 // Read rest of expression after its type.
@@ -31,6 +27,8 @@ private:
 // Discard tokens up to and including the terminator.
 // Returns the expression if okay. Otherwise returns empty expression.
     Expression readexp(char type, strview label, char const * terminator);
+// Classify an assertion. Return its type.
+    unsigned addasstype(Assertion & ass, bool isaxiom) const;
 // Read the proof labels of a compressed proof.
 // Discard tokens up to and including the closing parenthesis.
 // Returns proof steps if okay. Otherwise returns {NULL}.
@@ -73,7 +71,7 @@ private:
     bool readv();
 public:
 // Read tokens. Returns true iff okay.
-    bool read(const char * upto);
+    bool read(Tokens::size_type const upto);
 };
 
 // Read rest of expression after its type.
@@ -140,7 +138,7 @@ Expression Imp::readexp(char type, strview label, char const * terminator)
 // Return the iterator to tha assertion.
 Assertions::iterator Database::addass
     (strview label, Expression const & exp, struct Scopes const & scopes,
-     bool isaxiom)
+     Tokens::size_type tokenpos)
 {
     Assertions::value_type value(label, Assertion());
     Assertions::iterator iter(m_assertions.insert(value).first);
@@ -148,12 +146,11 @@ Assertions::iterator Database::addass
     ass.expression = exp;
     scopes.completeass(ass);
     ass.number = assertions().size();
-    ass.type |= isaxiom * Assertion::AXIOM;
+    ass.tokenpos = tokenpos;
     m_assvec.push_back(iter);
     return iter;
 }
 
-namespace {
 // Print error message indicating a proof referring to an inactive statement.
 static void proofinactivereferr(strview token, strview label)
 {
@@ -161,10 +158,32 @@ static void proofinactivereferr(strview token, strview label)
               << " which is not an active statement" << std::endl;
 }
 
+// Add a step to a proof.
 static bool operator+=(Proofsteps & steps, Proofstep step)
 {
     if (step.type != Proofstep::NONE) steps.push_back(step);
     return step.type;
+}
+
+namespace {
+// Classify an assertion. Return its type.
+unsigned Imp::addasstype(Assertion & ass, bool isaxiom) const
+{
+    // Classify if the assertion is an axiom.
+    ass.type |= isaxiom * Asstype::AXIOM;
+
+    // Classify if the assertion is trivial (conclusion is one of the hypotheses).
+    ass.type |= Asstype::TRIVIAL * ass.istrivial(ass.expression);
+
+    // Classify if the assertion has discouragement for use or proof change.
+    Assiters const & assvec(m_database.assvec());
+    Assiters::size_type const asscount(assvec.size());
+    Tokens::size_type const curpos(assvec.back()->second.tokenpos);
+    Tokens::size_type const prevpos
+        (asscount > 2 ? assvec[asscount - 2]->second.tokenpos : 0);
+    ass.type |= m_comments.discouragement(prevpos, curpos);
+//if (ass.type & (Asstype::NONEWPROOF + Asstype::NOUSE)) std::cout << assvec.back()->first << ' ' << (ass.type & (Asstype::NONEWPROOF + Asstype::NOUSE)) << std::endl;
+    return ass.type;
 }
 
 // Read the proof labels of a compressed proof.
@@ -289,8 +308,8 @@ bool Imp::addfloatinghyp(strview label, strview type, strview var)
     Hypiter const iter(m_database.addhyp(label, exp, true));
     m_scopes.back().activehyp.push_back(iter);
     m_scopes.back().floatinghyp[var] = iter;
-    // Add type code.
-    const_cast<Typecodes &>(m_database.typecodes())[type];
+    m_database.addtypecode(type);
+
     return true;
 }
 
@@ -312,7 +331,7 @@ bool Imp::reada(strview label)
     if (exp.empty())
         return false;
     // Add axiom to database
-    m_database.addass(label, exp, m_scopes, true);
+    addasstype(m_database.addass(label, exp, m_scopes, m_tokens.position)->second, true);
     return true;
 }
 
@@ -324,8 +343,11 @@ bool Imp::readp(strview label)
         return false;
 
     // Add assertion to database
-    Assertions::iterator iter(m_database.addass(label, newtheorem, m_scopes));
+    Assertions::iterator iter(m_database.addass(label, newtheorem, m_scopes, m_tokens.position));
+
+    // Classify assertion
     Assertion & ass(iter->second);
+    addasstype(ass, false);
 
     // Now for the proof
     if (unfinishedstat(m_tokens, "$p", label))
@@ -343,9 +365,6 @@ bool Imp::readp(strview label)
     if (okay)
         ass.proofsteps = steps;
 
-    // Mark trivial assertion, whose conclusion matches one of its hypotheses.
-    ass.type |= Assertion::TRIVIAL * ass.istrivial(ass.expression);
-
     return okay;
 }
 
@@ -354,7 +373,7 @@ static void floatinghyperr(strview token, strview label, int err)
 {
     if (err == 0)
         return;
-    static const char * msg[][3] =
+    static const char * const msg[][3] =
     {
         {"First symbol in $f statement ", " is ", " which is not a constant"},
         {"Second symbol in $f statement ", " is ", " which is not an active variable"},
@@ -456,7 +475,7 @@ bool Imp::readlabel(strview label)
     }
     else
     {
-        return !unexpected(true, "token", type.c_str); // !true == false
+        return !unexpected(true, "token", type.c_str); // return false
     }
 
     return okay;
@@ -605,31 +624,16 @@ bool Imp::readv()
 }
 
 // Read tokens. Returns true iff okay.
-bool Imp::read(const char * const upto)
+bool Imp::read(Tokens::size_type const upto)
 {
-    std::cout << "Reading and verifying data";
     Progress progress;
-    Timer timer;
 
     // Global scope
     m_scopes.push_back(Scope());
 
-    // Iterator to current section
-    Sections::iterator iter(m_sections.begin());
-    // Iterator to the end section
-    Sections::const_iterator const end
-        (upto ? m_sections.find(upto) : m_sections.end());
-    // # tokens to read
-    Tokens::size_type const size(end == m_sections.end() ? m_tokens.size() :
-                                 end->second.tokenpos);
     // Read the tokens.
-    while (m_tokens.position < size)
+    while (m_tokens.position < upto)
     {
-        // Add assertion # to section data
-        for ( ; iter != end &&
-            iter->second.tokenpos <= m_tokens.position; ++iter)
-            iter->second.assnumber = m_database.assertions().size();
-
         strview token(m_tokens.front());
         m_tokens.pop();
 
@@ -666,19 +670,27 @@ bool Imp::read(const char * const upto)
         }
         if (!okay)
             return false;
-        progress << m_tokens.position/static_cast<double>(size);
+        progress << m_tokens.position / static_cast<double>(upto);
     }
 
-    std::cout << "done in " << timer << 's' << std::endl;
     return m_scopes.isouter("${ without corresponding $}");
 }
 } // anonymous namespace
 
 // Read data from tokens. Returns true iff okay.
-bool Database::read(struct Sections & sections, struct Tokens & tokens,
-                    struct Comments const & comments, const char * const upto)
+bool Database::read(Tokens & tokens, Comments const & comments,
+                    Tokens::size_type upto)
 {
     clear();
-    m_commentinfo = comments;
-    return Imp(*this, sections, tokens).read(upto);
+
+    // Comment info
+    Commands const commands(comments["$j"]);
+//std::cout << "$j commands\n" << commands;
+    m_commentinfo.typecodes = Typecodes(commands["syntax"], commands["bound"]);
+//std::cout << "Syntax type codes: " << typecodes;
+//std::cout << "Bound type codes: " << commands["bound"];
+    m_commentinfo.ctordefns = Ctordefns(commands["definition"], commands["primitive"]);
+//std::cout << "Constructor definitions: " << ctordefns;
+
+    return Imp(*this, tokens, comments).read(upto);
 }

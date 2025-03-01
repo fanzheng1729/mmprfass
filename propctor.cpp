@@ -83,7 +83,7 @@ void Propctors::init()
     FOR (Propctors::reference r, *this)
     {
         r.second.cnf = r.second.truthtable;
-        r.second.argcount = log2(r.second.truthtable.size());
+        r.second.argcount = util::log2(r.second.truthtable.size());
     }
 }
 
@@ -125,7 +125,7 @@ Propctors::const_iterator Propctors::adddef
 static bool evaltruthtableonstack(Bvector const & truthtable, Bvector & stack)
 {
     // # arguments
-    Atom argcount(log2(truthtable.size()));
+    Atom argcount(util::log2(truthtable.size()));
     static const char varonstack[] = " variables on stack";
     if (!is1stle2nd(argcount, stack.size(), varallowed, varonstack))
         return false;

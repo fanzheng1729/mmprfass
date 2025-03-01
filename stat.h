@@ -5,7 +5,6 @@
 #include "ass.h"
 #include "util/for.h"
 #include "io.h"
-#include "sect.h"
 #include "proof/step.h"
 #include "syntaxiom.h"
 

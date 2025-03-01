@@ -12,14 +12,15 @@ typedef std::vector<std::size_t> Sectionnumber;
 // Section level count
 typedef Sectionnumber::size_type Sectionlevel;
 
+struct Comment;
 // Data of a section
 struct Section
 {
     std::string title;
+    // Pointer to comment
+    Comment const * pcomment;
     // Position in tokens
-    std::size_t tokenpos;
-    // # assertions before the section
-    std::size_t assnumber;
+    std::size_t tokenpos() const;
 };
 
 // Map: Section # -> position of begin of section in the token/assertion list

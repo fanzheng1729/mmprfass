@@ -89,19 +89,20 @@ static Terms generateupto1
 // Generate all terms for all arguments with rPolish up to a given size.
 void dogenerate
     (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
-     Proofsize argcount, Argtypes const & argtypes, Proofsize size,
-     Genresult & result, Termcounts & counts, Adder & adder)
+     Argtypes const & argtypes, Proofsize size,
+     Genresult & result, Termcounts & termcounts, Adder & adder)
 {
     // Stack of terms to be tried
     Genstack stack;
     // Preallocate for efficiency.
+    Proofsize const argcount(argtypes.size());
     stack.reserve(argcount);
     do
     {
         if (stack.size() < argcount) // Not all arguments seen
         {
             strview type(argtypes[stack.size()]);
-            generateupto(varsused, syntaxioms, type, size - 1, result, counts);
+            generateupto(varsused, syntaxioms, type, size - 1, result, termcounts);
             if (result[type].empty()) // No term generated
                 break;
 
@@ -113,7 +114,7 @@ void dogenerate
                 Proofsize const lastsize(size - 1 -
                                          argssize(argtypes, result, stack));
                 // 1st substitution with that size
-                stack.push_back(counts[type][lastsize - 1]);
+                stack.push_back(termcounts[type][lastsize - 1]);
             }
             continue;
         }
@@ -131,7 +132,7 @@ void dogenerate
             strview type(argtypes[stack.size() - 1]);
             // Index of the last substitution
             Terms::size_type const index(stack.back());
-            if (index < counts[type][result[type][index].size()] - 1)
+            if (index < termcounts[type][result[type][index].size()] - 1)
                 break;
             stack.pop_back();
         }
@@ -145,11 +146,11 @@ void dogenerate
 void generateupto
     (Varsused const & varsused, struct Syntaxioms const & syntaxioms,
      strview type, Proofsize size, Genresult & result,
-     Termcounts & counts)
+     Termcounts & termcounts)
 {
 //std::cout << "Generating up to size " << size << std::endl;
     Terms & terms(result[type]);
-    Termcounts::mapped_type & countbysize(counts[type]);
+    Termcounts::mapped_type & countbysize(termcounts[type]);
     // Preallocate for efficiency.
     countbysize.reserve(size + 1);
 
@@ -164,7 +165,7 @@ void generateupto
     if (countbysize.size() >= size + 1)
         return;
 
-    generateupto(varsused, syntaxioms, type, size - 1, result, counts);
+    generateupto(varsused, syntaxioms, type, size - 1, result, termcounts);
 
     FOR (Syntaxioms::const_reference syntaxiom, syntaxioms)
     {
@@ -174,17 +175,15 @@ void generateupto
             ass.expression[0] != type)
             continue;
 
-        Argtypes const types(argtypes(ass.exprPolish));
+        Argtypes const & types(argtypes(ass.exprPolish));
         if (types.empty())
             continue; // Bad syntax axiom.
 
         // Callback functor to add terms
         Termadder adder(terms, ass.exprPolish.back());
-        // # of arguments, at least 1
-        Proofsize const argcount(ass.exprPolish.size() - 1);
         // Main loop of term generation
-        dogenerate(varsused, syntaxioms, argcount, types, size,
-                   result, counts, adder);
+        dogenerate(varsused, syntaxioms, types, size,
+                   result, termcounts, adder);
     }
 //std::cout << terms.size() << " terms generated" << std::endl;
     // Record the # of terms.
@@ -214,7 +213,7 @@ Terms generate(struct Assertion const & assertion,
 {
     Syntaxioms filtered;
     FOR (Syntaxioms::const_reference syntaxiom, syntaxioms)
-        if (syntaxiom.second.assiter->second <= assertion)
+        if (syntaxiom.second.assiter->second.number <= assertion.number)
             filtered.insert(syntaxiom);
 
     return generate(assertion.varsused, filtered, type, size);

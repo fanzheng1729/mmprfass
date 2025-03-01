@@ -7,14 +7,15 @@
 struct Assertion
 {
 // Essential properties:
-    // Hypotheses of this axiom or theorem.
+    // Hypotheses of this axiom or theorem
     Hypiters hypiters;
     Disjvars disjvars;
-    // Statement of axiom or theorem.
+    // Statement of axiom or theorem
     Expression expression;
-    // # of axiom or theorem as ordered in the input file, starting from 1.
+    // # of axiom or theorem as ordered in the input file, starting from 1
     Assertions::size_type number;
-    operator Assertions::size_type() const { return number; }
+    // Position in tokens
+    std::size_t tokenpos;
 // Derived properties:
     // # free variables
     Hypsize nfreevar;
@@ -22,23 +23,15 @@ struct Assertion
     Varsused varsused;
     // Index of key hypotheses: essential ones containing all free variables
     std::vector<Hypsize> keyhyps;
-    // revPolish notation of hypotheses.
+    // revPolish notation of hypotheses
     std::vector<Proofsteps> hypsrPolish;
-    // revPolish of expression, proof steps.
+    // revPolish of expression, proof steps
     Proofsteps exprPolish, proofsteps;
-    // Proof tree of revPolish of expression.
+    // Proof tree of revPolish of expression
     Prooftree exptree;
-    // Proof tree of revPolish of hypotheses.
+    // Proof tree of revPolish of hypotheses
     std::vector<Prooftree> hypstree;
-    // Type (propositional, predicate, etc).
-    enum Type
-    {
-        AXIOM = 1,
-        TRIVIAL = 2,
-        DUPLICATE = 4,
-        USELESS = TRIVIAL | DUPLICATE,
-        PROPOSITIONAL = 8
-    };
+    // Type (propositional, predicate, etc)
     unsigned type;
 // Functions:
     // # of hypotheses

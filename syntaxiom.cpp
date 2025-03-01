@@ -10,7 +10,6 @@
 #include "util/for.h"
 #include "util/iter.h"
 #include "util/progress.h"
-#include "util/timer.h"
 
 // Map syntax axioms.
 void Syntaxioms::_map()
@@ -51,7 +50,7 @@ Syntaxioms::Syntaxioms
 //std::cout << "Syntax axioms:" << std::endl;
     for (Assiter iter(assertions.begin()); iter != assertions.end(); ++iter)
     {
-        if ((iter->second.type & Assertion::AXIOM) == 0)
+        if ((iter->second.type & Asstype::AXIOM) == 0)
             continue; // Skip theorems.
 
         Expression const & exp(iter->second.expression);
@@ -185,9 +184,8 @@ bool Syntaxioms::rPolish
 bool Syntaxioms::rPolish
     (Assertions & assertions, struct Typecodes const & typecodes) const
 {
-    std::cout << "Parsing syntax trees";
     Progress progress;
-    Timer timer;
+
     Assertions::size_type count(0), all(assertions.size());
     FOR (Assertions::reference ass, assertions)
     {
@@ -200,6 +198,5 @@ bool Syntaxioms::rPolish
         progress << ++count/static_cast<double>(all);
     }
 
-    std::cout << "done in " << timer << 's' << std::endl;
     return true;
 }
