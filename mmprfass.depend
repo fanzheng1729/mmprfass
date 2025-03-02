@@ -748,7 +748,7 @@
 	"io.h"
 	"strview.h"
 
-1740827532 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
+1740916466 source:c:\users\elitebook\downloads\metamath\mmprfass\main.cpp
 	"database.h"
 	"io.h"
 	"search/prop.h"
@@ -801,7 +801,7 @@
 	"strview.h"
 	"token.h"
 
-1740915561 c:\users\elitebook\downloads\metamath\mmprfass\test.h
+1740916647 c:\users\elitebook\downloads\metamath\mmprfass\test.h
 	"proof.h"
 
 1673193790 source:c:\users\elitebook\downloads\metamath\mmprfass\msg.cpp

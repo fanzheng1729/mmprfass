@@ -1,13 +1,12 @@
 #include <algorithm>
 #include <limits>
 #include "util.h"
-#include "util/arith.h"
-#include "util/filter.h"
-#include "util/find.h"
-#include "util/for.h"
-#include "util/progress.h"
+#include "util/arith.h"     // log2
+#include "util/filter.h"    // filter
+#include "util/find.h"      // find
+#include "util/for.h"       // for
 #include "def.h"            // checkdefinitions
-#include "database.h"
+#include "database.h"       // database
 #include "io.h"
 #include "proof/analyze.h"  // checkrPolish
 #include "proof/verify.h"   // verifyregularproof
@@ -25,7 +24,7 @@ template<class T> static T testlog2()
     return 0;
 }
 
-bool testlog2()
+static bool testlog2()
 {
     const char static * const types[] = {"short", "int", "long"};
     const unsigned long results[] =
@@ -62,7 +61,7 @@ static bool checkfilter
     return true;
 }
 
-bool testfilter(unsigned n)
+static bool testfilter(unsigned n)
 {
     std::cout << "Checking filters" << std::endl;
     if (n == 0) n = 1;
@@ -106,6 +105,30 @@ bool checkassiters
     }
 
     return true;
+}
+
+const char * testsat1(); // should be "Okay"
+unsigned testsat2(unsigned n); // should be 0
+bool testDAG(unsigned n); // should be 1
+bool testMCTS(std::size_t sizelimit, double const exploration[2]); // should be 1
+
+bool pretest()
+{
+    std::cout << "Checking utilities" << std::endl;
+    if (testlog2() || !testfilter(8))
+        return false;
+
+    std::cout << "Checking SAT solvers: " << testsat1() << std::endl;
+    if (testsat2(8) != 0)
+        return false;
+
+//    std::cout << "Checking DAG" << std::endl;
+//    if (!testDAG(8))
+//        return false;
+
+    std::cout << "Testing MTCS" << std::endl;
+    static double const exploration[] = {1, 1};
+    return testMCTS(1 << 20, exploration);
 }
 
 // Check if all the definitions are syntactically okay.
@@ -219,6 +242,7 @@ bool Syntaxioms::checkrPolish
     return true;
 }
 
+#include "util/progress.h"  // Progress
 // Test syntax parser. Return 1 iff okay.
 bool Database::checkrPolish() const
 {

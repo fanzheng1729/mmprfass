@@ -47,22 +47,8 @@ int main(int argc, char ** argv)
         return EXIT_FAILURE;
     }
 
-    std::cout << "Checking utilities" << std::endl;
-    if (testlog2() || !testfilter(8))
+    if (!pretest())
         return EXIT_FAILURE;
-
-    std::cout << "Checking SAT solvers: " << testsat1() << std::endl;
-    if (testsat2(8) != 0)
-        return EXIT_FAILURE;
-
-//    std::cout << "Checking DAG" << std::endl;
-//    if (!testDAG(8))
-//        return EXIT_FAILURE;
-
-//    std::cout << "Testing MTCS" << std::endl;
-//    double const exploration[] = {1, 1};
-//    if (!testMCTS(1 << 20, exploration))
-//        return EXIT_FAILURE;
 
     Tokens tokens;
     Comments comments;
